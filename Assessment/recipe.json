@@ -1,0 +1,47 @@
+"""
+{
+    "question1": {
+      "question": "What is the capital of NZ?",
+      "choices": [
+        "Auckland",
+        "Hamilton",
+        "Wellington",
+        "Christchurch"
+      ],
+      "answer": "Wellington"
+    },
+    "question2": {
+      "question": "Which of these items is a vegetable?",
+      "choices": [
+        "Chocolate",
+        "Bread",
+        "Carrot",
+        "Apple"
+      ],
+      "answer": "Carrot"
+    },
+    "question3": {
+      "question": "Which hand do you stir soup with?",
+      "choices": [
+        "Right hand",
+        "Left hand",
+        "Neither"
+      ],
+      "answer": "Neither"
+    }
+    
+    ,
+
+    "question4": {"question": "question1", "choices": ["answer1","answer2","answer3","answer4"], "answer": "answer1"}
+} """
+
+recipes = {
+    "name": "Chocolate chip cookie",
+    "author": "Grandmother",
+    "prep_time": "25 minutes",
+    "cooking_time": "15 minutes",
+    "total_time": "40 minutes",
+    "serves": "Four",
+    "ingredients": ["300g all-purpose-flower",
+                    "50g "]
+}
