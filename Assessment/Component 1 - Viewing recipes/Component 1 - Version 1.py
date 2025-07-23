@@ -6,7 +6,7 @@ Created on: 16/07/2025
 
 Version 1: Baseline functional product
 """
-"""
+
 # Importing modules
 import json
 
@@ -41,14 +41,3 @@ for each_instruction in list_of_instructions:
     
 timer_set_to = current_recipe["timer_set_to"]
 print(timer_set_to)
-
-import os
-
-os.remove("../data/chocolate_chip_cookie/image.jpg")
-os.remove("../data/chocolate_chip_cookie/info.json")
-
-os.rmdir("../data/chocolate_chip_cookie")
-
-import shutil
-
-shutil.rmtree("../data/chocolate_chip_cookie")"""
