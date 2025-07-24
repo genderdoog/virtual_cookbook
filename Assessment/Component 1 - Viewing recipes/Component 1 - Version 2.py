@@ -31,6 +31,9 @@ class Program:
         self.recipe_ingredients = StringVar()
         self.recipe_instructions = StringVar()
         
+        # Set up timer textvariable for timer
+        self.recipe_timer = StringVar()
+        
         # Create dictionary to store what windows are in our program
         self.windows = {}
         
@@ -49,6 +52,13 @@ class Program:
         '''Run program'''
         self.root.mainloop()
         
+    def run_timer(self):
+        '''Runs the timer of a recipe'''
+        self.recipe_timer.set(f"{self.timer_in_sec // 60}:{self.timer_in_sec % 60}")
+        self.timer_in_sec -= 1
+        
+        return
+    
     def create_RecipeFrame(self):
         '''Creates recipe frame'''
         # Creates frame for each widget in recipe frame
@@ -127,6 +137,24 @@ class Program:
         self.recipe_instructions_textbox.grid(row = 0, column = 2, sticky="NESW",
                                               rowspan = 3)
         
+        # Timer label
+        self.timer_in_min = current_recipe["timer_set_to"] # Find the set timer in minutes
+        
+        self.recipe_timer.set(self.timer_in_min)
+        
+        self.timer_in_sec = self.timer_in_min * 60 # Convert minutes to seconds
+
+        
+     
+        
+        
+        self.timer_label = Label(self.recipe_frame, textvariable=self.recipe_timer, 
+                                 bg="yellow")
+        self.timer_label.grid(row = 0, column = 3, sticky = "NESW")
+        
+        self.timer_start_button = Button(self.recipe_frame, text = "Start timer", 
+                                         command=self.run_timer)
+        self.timer_start_button.grid(row = 1, column = 3, sticky = "NESW")
         
        
         return self.recipe_frame
