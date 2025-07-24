@@ -4,7 +4,7 @@ Component 1: Viewing recipes
 Created by: Matthew C
 Created on: 16/07/2025
 
-Version 1: Baseline functional product
+Version 1: Output to python shell
 """
 
 # Importing modules

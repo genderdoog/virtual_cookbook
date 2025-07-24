@@ -4,8 +4,10 @@ Component 1: Viewing recipes
 Created by: Matthew C
 Created on: 22/07/2025
 
-Version 1,2: Baseline functional product
+Version 1: Output to python shell
+Version 2: Output to GUI
 """
+
 import json
 from tkinter import *
 
@@ -16,7 +18,7 @@ class Program:
         
         # Initialise window settings
         self.root = Tk()
-        self.root.title("component 1")
+        self.root.title("Component 1 - Version 2")
         
         # Generate main window container
         self.main_container = Frame(self.root)
@@ -101,21 +103,30 @@ class Program:
         
         # Show ingredients list
         self.recipe_ingredients_textbox = Label(self.recipe_frame,
-                                               textvariable=self.recipe_ingredients)
-        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="NESW" )
+                                               textvariable=self.recipe_ingredients, bg="red")
+        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="NESW",
+                                             rowspan = 3)
         
         # Show recipe instructions
-        self.building_recipe_instructions = ""
+        self.building_recipe_instructions = "" # Create a temporary string which we will use to display the recipe instructions
         
-        self.list_of_instructions = current_recipe["instructions"]
-        for each_instruction in self.list_of_instructions:
-            self.building_recipe_instructions += f"{self.list_of_instructions[each_instruction]}\n"       
+        self.list_of_instructions = current_recipe["instructions"] # Create a variable which stores the instructions in a dictionary format
         
+        # We now loop through each item in the dictionary
+        for each_step in self.list_of_instructions:
+            self.building_recipe_instructions += f"{each_step.title()}: {self.list_of_instructions[each_step]}\n\n"        
+            
+        # Set the textvariable which will be used in the label
         self.recipe_instructions.set(self.building_recipe_instructions)
         
+        # Create then pack recipe instructions
         self.recipe_instructions_textbox = Label(self.recipe_frame,
-                                         textvariable=self.recipe_instructions)
-        self.recipe_ingredients_textbox.grid(row = 0, column = 2, sticky="NESW")
+                                         textvariable=self.recipe_instructions,
+                                         wraplength=250)
+        self.recipe_instructions_textbox.grid(row = 0, column = 2, sticky="NESW",
+                                              rowspan = 3)
+        
+        
        
         return self.recipe_frame
     
