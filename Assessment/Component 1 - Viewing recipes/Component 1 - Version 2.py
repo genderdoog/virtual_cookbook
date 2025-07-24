@@ -65,14 +65,15 @@ class Program:
         
         # Create then pack widget
         self.recipe_name_heading = Label(self.recipe_frame, 
-                                          textvariable=self.recipe_name)
+                                          textvariable=self.recipe_name, bg="orange")
         self.recipe_name_heading.grid(row = 0, column = 0, sticky="NESW")
         
         # Show image
         self.recipe_image = PhotoImage(file="../data/chocolate_chip_cookie/image.png") # Create image widget
         self.recipe_image = self.recipe_image.subsample(12) # Resizes image to be smaller
         # Create then show widget with the image inside
-        Label(self.recipe_frame, image = self.recipe_image).grid(row = 1, column = 0)
+        self.recipe_image_frame = Label(self.recipe_frame, image = self.recipe_image, bg="green")
+        self.recipe_image_frame.grid(row = 1, column = 0, sticky = "NESW")
         
         # Showing other recipe information
         self.building_recipe_info = "" # Create a temporary string so that we can add info to the textbox of the recipe
@@ -88,7 +89,7 @@ class Program:
         
         # Show recipe info box
         self.recipe_info_textbox = Label(self.recipe_frame, 
-                                         textvariable=self.recipe_info)
+                                         textvariable=self.recipe_info, bg="yellow")
         self.recipe_info_textbox.grid(row = 2, column = 0, sticky="NESW")
         
         # Show recipe ingredients
@@ -104,7 +105,7 @@ class Program:
         # Show ingredients list
         self.recipe_ingredients_textbox = Label(self.recipe_frame,
                                                textvariable=self.recipe_ingredients, bg="red")
-        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="NESW",
+        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="NSEW",
                                              rowspan = 3)
         
         # Show recipe instructions
@@ -122,7 +123,7 @@ class Program:
         # Create then pack recipe instructions
         self.recipe_instructions_textbox = Label(self.recipe_frame,
                                          textvariable=self.recipe_instructions,
-                                         wraplength=250)
+                                         wraplength=300, justify = LEFT)
         self.recipe_instructions_textbox.grid(row = 0, column = 2, sticky="NESW",
                                               rowspan = 3)
         
