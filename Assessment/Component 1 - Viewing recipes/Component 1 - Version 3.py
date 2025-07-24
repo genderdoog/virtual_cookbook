@@ -6,10 +6,12 @@ Created on: 22/07/2025
 
 Version 1: Output to python shell
 Version 2: Output to GUI - only specified recipe
+Version 3: User can pick what recipe they want
 """
 
 import json
 from tkinter import *
+from tkinter import ttk
 
 class Program:
     
@@ -18,7 +20,7 @@ class Program:
         
         # Initialise window settings
         self.root = Tk()
-        self.root.title("Component 1 - Version 2")
+        self.root.title("Component 1 - Version 3")
         
         # Generate main window container
         self.main_container = Frame(self.root)
@@ -38,10 +40,11 @@ class Program:
         self.windows = {}
         
         # Creating windows in our GUI
+        self.windows["ChoosingRecipeFrame"] = self.create_ChoosingRecipeFrame()
         self.windows["RecipeFrame"] = self.create_RecipeFrame()
         
-        # Show recipe frame first
-        self.show_frame("RecipeFrame")
+        # Show choosing recipe frame first
+        self.show_frame("ChoosingRecipeFrame")
         
     def show_frame(self, name):
         '''Show a frame, then bring it to the top'''
@@ -59,8 +62,27 @@ class Program:
         
         return
     
+    def create_ChoosingRecipeFrame(self):
+        '''Menu which allows user to pick and choose a recipe'''
+        # Create choose recipe frame
+        self.choose_recipe_frame = Frame(self.main_container)
+        self.choose_recipe_frame.grid(row = 0, column = 0, sticky = "NESW")
+        
+        # Create and pack combo box
+        self.choose_recipe_combobox = ttk.Combobox(self.choose_recipe_frame, 
+                                                   state = "readonly", values = 
+                                                   ["testing"])
+        self.choose_recipe_combobox.grid(row = 0, column = 0)
+        
+        self.choose_recipe_selbutt = Button(self.choose_recipe_frame, 
+                                            text = "View recipe")
+        self.choose_recipe_selbutt.grid(row = 1, column = 0)
+                                            
+        
+        return self.choose_recipe_frame
+    
     def create_RecipeFrame(self):
-        '''Creates recipe frame'''
+        '''Creates recipe frame for chosen recipe'''
         # Creates frame for each widget in recipe frame
         self.recipe_frame = Frame(self.main_container)
         self.recipe_frame.grid(row=0, column=0, sticky="NESW")
