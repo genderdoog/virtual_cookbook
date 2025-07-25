@@ -43,7 +43,7 @@ class Program:
         self.windows["ChoosingRecipeFrame"] = self.create_ChoosingRecipeFrame()
         self.windows["RecipeFrame"] = self.create_RecipeFrame()
         
-        # Show choosing recipe frame first
+        # Show choosing recipe frame first when program is started
         self.show_frame("ChoosingRecipeFrame")
         
     def show_frame(self, name):
@@ -64,14 +64,25 @@ class Program:
     
     def create_ChoosingRecipeFrame(self):
         '''Menu which allows user to pick and choose a recipe'''
-        # Create choose recipe frame
+        # Create choose recipe frame window
         self.choose_recipe_frame = Frame(self.main_container)
         self.choose_recipe_frame.grid(row = 0, column = 0, sticky = "NESW")
         
+        # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
+        with open("../data/recipe_index.json") as f:
+            dict_recipes_combobox = json.load(f)
+        
+        list_recipes_combobox_name = [] # We create a empty dictionary which will be used by the combo box
+        
+        # We append each key from the index dictionary into a list, which will be used by the combobox
+        for each_recipe_name in dict_recipes_combobox:
+            list_recipes_combobox_name.append(each_recipe_name)
+        
+        
         # Create and pack combo box
         self.choose_recipe_combobox = ttk.Combobox(self.choose_recipe_frame, 
-                                                   state = "readonly", values = 
-                                                   ["testing"])
+                                                   state = "readonly",
+                                                   values = list_recipes_combobox_name)
         self.choose_recipe_combobox.grid(row = 0, column = 0)
         
         self.choose_recipe_selbutt = Button(self.choose_recipe_frame, 
@@ -87,8 +98,10 @@ class Program:
         self.recipe_frame = Frame(self.main_container)
         self.recipe_frame.grid(row=0, column=0, sticky="NESW")
         
+        self.recipe_folder_name = "chocolate_chip_cookie"
+        
         # Open current recipe information from info.json file
-        with open("../data/chocolate_chip_cookie/info.json") as f:
+        with open("../data/" + self.recipe_folder_name + "/info.json") as f:
             current_recipe = json.load(f)
     
         # Show recipe name
@@ -101,7 +114,7 @@ class Program:
         self.recipe_name_heading.grid(row = 0, column = 0, sticky="NESW")
         
         # Show image
-        self.recipe_image = PhotoImage(file="../data/chocolate_chip_cookie/image.png") # Create image widget
+        self.recipe_image = PhotoImage(file="../data/" + self.recipe_folder_name + "/image.png") # Create image widget
         self.recipe_image = self.recipe_image.subsample(12) # Resizes image to be smaller
         # Create then show widget with the image inside
         self.recipe_image_frame = Label(self.recipe_frame, image = self.recipe_image, bg="green")
@@ -136,8 +149,9 @@ class Program:
         
         # Show ingredients list
         self.recipe_ingredients_textbox = Label(self.recipe_frame,
-                                               textvariable=self.recipe_ingredients, bg="red")
-        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="NSEW",
+                                               textvariable=self.recipe_ingredients, 
+                                               bg="red", justify = LEFT)
+        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="N",
                                              rowspan = 3)
         
         # Show recipe instructions
