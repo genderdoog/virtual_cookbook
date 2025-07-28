@@ -41,7 +41,7 @@ class Program:
         
         # Creating windows in our GUI
         self.windows["ChoosingRecipeFrame"] = self.create_ChoosingRecipeFrame()
-        self.windows["RecipeFrame"] = self.create_RecipeFrame()
+        self.windows["RecipeFrame"] = self.create_RecipeFrame("chocolate_chip_cookie") # We add an example recipe into the function
         
         # Show choosing recipe frame first when program is started
         self.show_frame("ChoosingRecipeFrame")
@@ -74,7 +74,7 @@ class Program:
         
         list_recipes_combobox_name = [] # We create a empty dictionary which will be used by the combo box
         
-        # We append each key from the index dictionary into a list, which will be used by the combobox
+        # We append each key from the index dictionary into a list, which will be used by the combobox (values=this dictionary)
         for each_recipe_name in dict_recipes_combobox:
             list_recipes_combobox_name.append(each_recipe_name)
         
@@ -86,22 +86,23 @@ class Program:
         self.choose_recipe_combobox.grid(row = 0, column = 0)
         
         self.choose_recipe_selbutt = Button(self.choose_recipe_frame, 
-                                            text = "View recipe")
+                                            # We want to parse in the name of the folder which houses the image and json of the recipe, hence we use the value of the dictionary
+                                            text = "View recipe", command=lambda: self.create_RecipeFrame(dict_recipes_combobox[self.choose_recipe_combobox.get()])) 
         self.choose_recipe_selbutt.grid(row = 1, column = 0)
                                             
         
         return self.choose_recipe_frame
     
-    def create_RecipeFrame(self):
+    def create_RecipeFrame(self, recipe_folder_name):
         '''Creates recipe frame for chosen recipe'''
         # Creates frame for each widget in recipe frame
         self.recipe_frame = Frame(self.main_container)
         self.recipe_frame.grid(row=0, column=0, sticky="NESW")
         
-        self.recipe_folder_name = "chocolate_chip_cookie"
+        #recipe_folder_name = "chocolate_chip_cookie"
         
         # Open current recipe information from info.json file
-        with open("../data/" + self.recipe_folder_name + "/info.json") as f:
+        with open("../data/" + recipe_folder_name + "/info.json") as f:
             current_recipe = json.load(f)
     
         # Show recipe name
@@ -114,7 +115,7 @@ class Program:
         self.recipe_name_heading.grid(row = 0, column = 0, sticky="NESW")
         
         # Show image
-        self.recipe_image = PhotoImage(file="../data/" + self.recipe_folder_name + "/image.png") # Create image widget
+        self.recipe_image = PhotoImage(file="../data/" + recipe_folder_name + "/image.png") # Create image widget
         self.recipe_image = self.recipe_image.subsample(12) # Resizes image to be smaller
         # Create then show widget with the image inside
         self.recipe_image_frame = Label(self.recipe_frame, image = self.recipe_image, bg="green")
