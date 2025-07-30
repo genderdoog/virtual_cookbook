@@ -10,6 +10,7 @@ Version 3: User can pick what recipe they want
 """
 
 import json
+import random # For random recipe button
 from tkinter import *
 from tkinter import ttk
 
@@ -58,9 +59,9 @@ class Program:
     def run_timer(self):
         '''Runs the timer of a recipe'''
         self.recipe_timer.set(f"{self.timer_in_sec // 60}:{self.timer_in_sec % 60}")
+        time.sleep(1)
         self.timer_in_sec -= 1
         
-        return
     
     def create_ChoosingRecipeFrame(self):
         '''Menu which allows user to pick and choose a recipe'''
@@ -72,23 +73,26 @@ class Program:
         with open("../data/recipe_index.json") as f:
             dict_recipes_combobox = json.load(f)
         
-        list_recipes_combobox_name = [] # We create a empty dictionary which will be used by the combo box
-        
-        # We append each key from the index dictionary into a list, which will be used by the combobox (values=this dictionary)
-        for each_recipe_name in dict_recipes_combobox:
-            list_recipes_combobox_name.append(each_recipe_name)
-        
+        list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Creates a list of the non-folder names of the recipes
+        list_recipes_folder_name = list(dict_recipes_combobox.values()) # Creates a list which is of the folder type names of each recipe (used for random recipe button)
         
         # Create and pack combo box
         self.choose_recipe_combobox = ttk.Combobox(self.choose_recipe_frame, 
                                                    state = "readonly",
                                                    values = list_recipes_combobox_name)
-        self.choose_recipe_combobox.grid(row = 0, column = 0)
+        self.choose_recipe_combobox.grid(row = 0, column = 0, sticky = "NESW")
         
+        # Create and pack button which will change the view recipes frame
         self.choose_recipe_selbutt = Button(self.choose_recipe_frame, 
-                                            # We want to parse in the name of the folder which houses the image and json of the recipe, hence we use the value of the dictionary
+                                            # We want to parse in the name of the folder which holds the image and json of the recipe, hence we use the value of the dictionary
                                             text = "View recipe", command=lambda: self.create_RecipeFrame(dict_recipes_combobox[self.choose_recipe_combobox.get()])) 
-        self.choose_recipe_selbutt.grid(row = 1, column = 0)
+        self.choose_recipe_selbutt.grid(row = 1, column = 0, sticky="NESW")
+        
+        # Similar to the view recipe button, except it uses a random item from the list "list_recipes_folder_name"
+        self.choose_recipe_ranbutt = Button(self.choose_recipe_frame, 
+                                            text = "Pick a random recipe for me!",
+                                            command=lambda: self.create_RecipeFrame(random.choice(list_recipes_folder_name)))
+        self.choose_recipe_ranbutt.grid(row = 2, column = 0, sticky = "NESW")
                                             
         
         return self.choose_recipe_frame
@@ -98,8 +102,6 @@ class Program:
         # Creates frame for each widget in recipe frame
         self.recipe_frame = Frame(self.main_container)
         self.recipe_frame.grid(row=0, column=0, sticky="NESW")
-        
-        #recipe_folder_name = "chocolate_chip_cookie"
         
         # Open current recipe information from info.json file
         with open("../data/" + recipe_folder_name + "/info.json") as f:
@@ -174,26 +176,27 @@ class Program:
         self.recipe_instructions_textbox.grid(row = 0, column = 2, sticky="NESW",
                                               rowspan = 3)
         
-        # Timer label
-        self.timer_in_min = current_recipe["timer_set_to"] # Find the set timer in minutes
-        
-        self.recipe_timer.set(self.timer_in_min)
-        
-        self.timer_in_sec = self.timer_in_min * 60 # Convert minutes to seconds
+        # Getting timer information from json file
+        self.timer_in_min = current_recipe["timer_set_to"] # Find the set timer in minutes from json file
+        self.recipe_timer.set(self.timer_in_min) # Set the timer label to what is found in the json file
+        self.timer_in_sec = self.timer_in_min * 60 # Convert minutes to seconds, which will be used for our calculations
 
-        
-     
-        
-        
+        # Time textlabel
         self.timer_label = Label(self.recipe_frame, textvariable=self.recipe_timer, 
                                  bg="yellow")
         self.timer_label.grid(row = 0, column = 3, sticky = "NESW")
         
+        # Timer start button
         self.timer_start_button = Button(self.recipe_frame, text = "Start timer", 
                                          command=self.run_timer)
         self.timer_start_button.grid(row = 1, column = 3, sticky = "NESW")
         
-       
+        # Back button
+        # Back button (return to main menu)
+        self.back_button = Button(self.recipe_frame, text = "Back",
+                                  command=lambda: self.show_frame("ChoosingRecipeFrame"))
+        self.back_button.grid(row = 3, column = 0, columnspan = 4, sticky="NESW")        
+        
         return self.recipe_frame
     
 # Main program
