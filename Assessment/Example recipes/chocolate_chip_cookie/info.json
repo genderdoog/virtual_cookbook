@@ -1,0 +1,23 @@
+{
+    "name": "Chocolate chip cookie",
+    "author/source": "https://cloudykitchen.com/blog/chocolate-cookies/",
+    "prep_time": "25 minutes",
+    "total_time": "40 minutes",
+    "serves": "Four",
+    "ingredients": [
+        "300g all-purpose flour",
+        "50g cocoa powder, sifted",
+        "1tsp salt",
+        "3/4tsp baking soda",
+        "1 large egg",
+        "Granulated sugar for rolling"
+    ],
+    "instructions": {
+        "step1": "Preheat the oven to 350°f / 180°c. Line three baking trays with parchment paper. In a medium bowl, sift together the flour, cocoa powder, salt, and baking soda. Set aside.",
+        "step2": "In the bowl of a stand mixer fitted with the paddle attachment or in a large bowl using an electric mixer, cream the butter and sugars until light and fluffy, 3-4 minutes. Add the egg and vanilla, and beat until combined. Add the flour and cocoa mixture, and beat on low until just incorporated.",
+        "step3": "Using a cookie scoop, scoop 2 tbsp worth of mixture at a time (about 40g). Roll into a ball using your hands, then roll generously in granulated sugar. Place on the baking tray, leaving room to spread (I had 8 cookies per baking tray).",
+        "step4": "Bake one tray at a time for 11-12 minutes, until the cookies have puffed up and are beginning to crack on the tops, and the edges are set. Remove from the oven and allow to cool on the baking tray for 15 minutes then transfer to a wire rack to cool completely.",
+        "step5": "Store cookies in an airtight container at room temperature for up to 5 days."
+    },
+    "timer_set_to": 12
+}
