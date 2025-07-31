@@ -59,7 +59,6 @@ class Program:
     def run_timer(self):
         '''Runs the timer of a recipe'''
         self.recipe_timer.set(f"{self.timer_in_sec // 60}:{self.timer_in_sec % 60}")
-        time.sleep(1)
         self.timer_in_sec -= 1
         
     
