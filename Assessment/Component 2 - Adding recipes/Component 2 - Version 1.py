@@ -97,10 +97,25 @@ while user_finished_adding_ingredients != True:
     else:
         print("try again")
     
-new_recipe_info["Ingredients"] = list_of_ingredients
+new_recipe_info["ingredients"] = list_of_ingredients
 
-# Instructions
-list_of_instructions = []
+# Adding instructions to dictionary
+dict_of_instructions = {}
+
+# We set up the while loop
+current_step = 1
+user_finished_adding_instructions = False 
+
+while user_finished_adding_instructions != True:
+    current_instruction = input(f"Enter instructions for step {current_step} (type 'x' to stop): ")
     
+    if current_instruction == "x":
+        user_finished_adding_instructions= True # End while loop as user has indicated they are finished
+    
+    else: # If user wants to add an instruction
+        dict_of_instructions[f"step{current_step}"] = current_instruction # Append this step to the dict_of_instructions dictionary
+        current_step += 1 # For the next instruction if the user decides to add another one 
+    
+new_recipe_info["instructions"] = dict_of_instructions # Append dictionary filled with instruction to the main dictionary
 
 print(new_recipe_info)
