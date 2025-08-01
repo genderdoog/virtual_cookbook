@@ -11,7 +11,7 @@ Version 2: minimum viable product GUI
 import json
 import os
 from tkinter import *
-from tkinter import ttk # Checkbox
+from tkinter import ttk # For checkbox
 
 class Program:
     
@@ -35,6 +35,8 @@ class Program:
         self.windows["AskRecipeNameFrame"] = self.create_AskRecipeNameFrame()
         self.windows["AskRecipeAuthorSourceFrame"] = self.create_AskRecipeAuthorSourceFrame()
         self.windows["AskRecipePrepTimeFrame"] = self.create_AskRecipePrepTimeFrame()
+        self.windows["AskRecipeTotalTimeFrame"] = self.create_AskRecipeTotalTimeFrame()
+        self.windows["ShowCurrentIngredientsFrame"] = self.create_ShowCurrentIngredientsFrame()
         
         # Show home frame first
         self.show_frame("HomeAddRecipesFrame")   
@@ -131,11 +133,65 @@ class Program:
         
         # Create next button
         self.ask_recipe_prep_time_frame_nextbutt = Button(self.ask_recipe_prep_time_frame,
-                                                          text = "Next")
+                                                          text = "Next",
+                                                          command=lambda: self.show_frame("AskRecipeTotalTimeFrame"))
         self.ask_recipe_prep_time_frame_nextbutt.grid(row = 2, column = 0,
                                                       sticky = "NESW")
         
         return self.ask_recipe_prep_time_frame
+    
+    def create_AskRecipeTotalTimeFrame(self):
+        '''Creates window which asks user for total time for recipe'''
+        self.ask_recipe_total_time_frame = Frame(self.main_container)
+        self.ask_recipe_total_time_frame.grid(row = 0, column = 0, sticky = "NESW")
+        
+        # Create and pack heading widget
+        self.ask_recipe_total_time_frame_heading = Label(self.ask_recipe_total_time_frame,
+                                                         text = "How many people does this recipe serve?")
+        self.ask_recipe_total_time_frame_heading.grid(row = 0, column = 0,
+                                                      sticky = "NESW")
+        
+        # Create and pack entry box
+        self.ask_recipe_total_time_frame_textbox = Entry(self.ask_recipe_total_time_frame)
+        self.ask_recipe_total_time_frame_textbox.grid(row = 1, column = 0, 
+                                                      sticky = "NESW")
+        
+        # Create and pack next button
+        self.ask_recipe_total_time_frame_nextbutt = Button(self.ask_recipe_total_time_frame,
+                                                           text = "Next",
+                                                           command=lambda: self.show_frame("ShowCurrentIngredientsFrame"))
+        self.ask_recipe_total_time_frame_nextbutt.grid(row = 2, column = 0,
+                                                       sticky = "NESW")
+        
+        return self.ask_recipe_total_time_frame
+    
+    def create_ShowCurrentIngredientsFrame(self):
+        '''Shows current ingredients added to new recipe'''
+        # Setting up frame
+        self.show_current_ingredients_frame = Frame(self.main_container)
+        self.show_current_ingredients_frame.grid(row = 0, column = 0, sticky = "NESW")
+        
+        # Create and pack heading widget
+        self.show_current_ingredients_frame_heading = Label(self.show_current_ingredients_frame,
+                                                            text = "Current ingredients")
+        self.show_current_ingredients_frame_heading.grid(row = 0, column = 0,
+                                                         sticky = "NESW",
+                                                         columnspan = 2)
+        
+        # Create and pack "add ingredients" button
+        self.show_current_ingredients_frame_addbutt = Button(self.show_current_ingredients_frame,
+                                                             text = "Add")
+        self.show_current_ingredients_frame_addbutt.grid(row = 2, column = 0,
+                                                         sticky = "NESW")
+        
+        # Create and pack "next" button
+        self.show_current_ingredients_frame_nextbutt = Button(self.show_current_ingredients_frame,
+                                                              text = "Next")
+        self.show_current_ingredients_frame_nextbutt.grid(row = 2, column = 1,
+                                                          sticky = "NESW")
+        
+        return self.show_current_ingredients_frame
+        
         
 # Main program
 if __name__ == "__main__":
