@@ -29,6 +29,7 @@ class Program:
         
         # Variables when user is adding ingredients
         self.display_quantity_name = StringVar()
+        self.display_ingredients_list = StringVar()
         
         # Create dictionary to store what windows are in our program
         self.windows = {}
@@ -56,7 +57,10 @@ class Program:
     def run(self):
         '''Run program'''
         self.root.mainloop()
-        
+      
+    def save_information(self, info):
+        '''Adds argument to new_recipe_info'''
+        pass
         
     def create_HomeAddRecipesFrame(self):
         '''Creates homepage of adding recipes'''
@@ -95,6 +99,12 @@ class Program:
                                                      command=lambda: self.show_frame("AskRecipeAuthorSourceFrame"))
         self.ask_recipe_name_frame_nextbutt.grid(row = 2, column = 0, 
                                                 sticky = "NESW")
+        
+        # Create save button
+        self.ask_recipe_name_frame_savebutt = Button(self.ask_recipe_name_frame,
+                                                     text = "Save",
+                                                     command=lambda: self.save_information(self.ask_recipe_name_frame_textbox.get()))
+        self.ask_recipe_name_frame_savebutt.grid(row = 2, column = 1, sticky = "NESW")
         
         return self.ask_recipe_name_frame
     
@@ -190,6 +200,13 @@ class Program:
                                                          sticky = "NESW",
                                                          columnspan = 2)
         
+        
+        # Create and pack "current list of ingredients"
+        self.show_current_ingredients_frame_list = Label(self.show_current_ingredients_frame,
+                                                         textvariable = self.display_ingredients_list)
+        self.show_current_ingredients_frame_list.grid(row = 1, column = 0,
+                                                      sticky = "NESW")
+        
         # Create and pack "add ingredients" button
         self.show_current_ingredients_frame_addbutt = Button(self.show_current_ingredients_frame,
                                                              text = "Add",
@@ -256,6 +273,13 @@ class Program:
         self.add_ingredient_name_frame_textbox.grid(row = 1, column = 0,
                                                      sticky = "NESW")
         
+        
+        # Create and pack save button
+        self.add_ingredient_name_frame_savebutt = Button(self.add_ingredient_name_frame,
+                                                         text = "Save")
+        self.add_ingredient_name_frame_savebutt.grid(row = 2, column = 1,
+                                                     sticky = "NESW")
+        
         # Create and pack next button
         self.add_ingredient_name_frame_nextbutt = Button(self.add_ingredient_name_frame,
                                                          text = "Next",
@@ -270,13 +294,10 @@ class Program:
         '''Asks user for the amount of that ingredient which they have chosen'''
         self.add_ingredient_amount_frame = Frame(self.main_container)
         self.add_ingredient_amount_frame.grid(row = 0, column = 0, sticky = "NESW")
-        
-        # Set the quantity name which will be displayed to the user on this frame
-        print(self.add_ingredient_name_frame_textbox.get())
-        
+
         # Creates and packs heading
         self.add_ingredient_amount_frame_heading = Label(self.add_ingredient_amount_frame,
-                                                         text = "Enter amount of: ")
+                                                         text = "Enter amount of this ingredient type ")
         self.add_ingredient_amount_frame_heading.grid(row = 0, column = 0, 
                                                       sticky = "NESW")
         
@@ -292,9 +313,16 @@ class Program:
                                                       sticky = "NESW")
         
         # Creates and packs next button
-        
+        self.add_ingredient_amount_frame_nextbutt = Button(self.add_ingredient_amount_frame,
+                                                           text = "Next",
+                                                           command=lambda: self.show_frame("ShowCurrentIngredientsFrame"))
+        self.add_ingredient_amount_frame_nextbutt.grid(row = 4, column = 0,
+                                                       sticky = "NESW")
         
         return self.add_ingredient_amount_frame
+    
+    def testing(self):
+        print("testing")
 # Main program
 if __name__ == "__main__":
     app = Program()
