@@ -25,7 +25,9 @@ class Program:
         self.main_container = Frame(self.root)
         self.main_container.grid(row=0, column=0, sticky="NESW")
         
+        # Storing information
         self.new_recipe_info = {} # Creates the main dictionary which we will then dump to a json file
+        self.temp_ingredient_info = [] # This will store information which will be useful when adding ingredients to a recipe
         
         # Create dictionary to store what windows are in our program
         self.windows = {}
@@ -63,9 +65,45 @@ class Program:
       
     def save_information(self, data_type, info):
         '''When the users presses this button, it saves it to the main dictionary'''
-        self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"}
+        self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
         print(self.new_recipe_info) 
         
+    def save_temp_ingredient_info(self, data_type, info):
+        '''This is used to build the ingredients that the user adds'''
+
+        # If user presses the save button when choosing quantity type
+        if data_type == "quantity_type":
+            # Once again we open the quantity types json file so that we can append the apropriate end to the final string
+            with open("../data/quantity_types.json") as f:
+                quantity_types_combobox = json.load(f)
+            
+            self.temp_ingredient_info.insert(0, quantity_types_combobox[info]) # We then add it to the temporary dictionary
+            
+            print(self.temp_ingredient_info)
+            
+        # If user presses save button when entering ingredient name
+        elif data_type == "quantity_name":
+            self.temp_ingredient_info.insert(1, info)
+            print(self.temp_ingredient_info)
+            
+        # If user presses save button when entering ingredient amount
+        elif data_type == "quantity_amount":
+            try:
+                info = int(info) # Turn it into a integer value
+                if info <= 0: # If amount entered is less than 0, this is not possible
+                    print("invalid")
+                else:
+                    self.temp_ingredient_info.insert(2, info)
+                    print(self.temp_ingredient_info)
+                    
+                    
+            except ValueError: # If a letter is found in the input
+                if "/" in info:
+                    info = str(info)
+                    print("valid")
+                
+                else:
+                    print("enter whole values only")
         
     def create_HomeAddRecipesFrame(self):
         '''Creates homepage of adding recipes'''
@@ -301,7 +339,8 @@ class Program:
         self.add_ingredient_quantity_type_frame_heading = Label(self.add_ingredient_quantity_type_frame,
                                                                 text = "Enter quantity type:")
         self.add_ingredient_quantity_type_frame_heading.grid(row = 0, column = 0,
-                                                             sticky = "NESW")
+                                                             sticky = "NESW",
+                                                             columnspan = 2)
         
         # This will open up the dictionary which stores all the valid quantity types, used for the combo box
         with open("../data/quantity_types.json") as f:
@@ -313,19 +352,27 @@ class Program:
         # Create and pack combo box 
         self.add_ingredient_quantity_type_frame_combobox = ttk.Combobox(self.add_ingredient_quantity_type_frame,
                                                                         state = "readonly",
-                                                                        values = quantity_types_keys)
+                                                                        values = quantity_types_keys) # Set values to what is in the dictionary keys
         self.add_ingredient_quantity_type_frame_combobox.grid(row = 1, column = 0,
-                                                              sticky = "NESW")
+                                                              sticky = "NESW",
+                                                              columnspan = 2)
         
-        # Create and pack next button
+        # Create and pack next button, to move onto asking the ingredient name
         self.add_ingredient_quantity_type_frame_nextbutt = Button(self.add_ingredient_quantity_type_frame,
                                                                   text = "Next",
                                                                   command=lambda: self.show_frame("AddIngredientNameFrame"))
         self.add_ingredient_quantity_type_frame_nextbutt.grid(row = 2, column = 0,
                                                               sticky = "NESW")
         
+        # Create and pack save button, to save information to self.temp_ingredient_info
+        self.add_ingredient_quantity_type_frame_savebutt = Button(self.add_ingredient_quantity_type_frame,
+                                                                  text = "Save",
+                                                                  command=lambda: self.save_temp_ingredient_info("quantity_type", self.add_ingredient_quantity_type_frame_combobox.get())) 
+        self.add_ingredient_quantity_type_frame_savebutt.grid(row = 2, column = 1,
+                                                             sticky = "NESW")
+        
         return self.add_ingredient_quantity_type_frame
-    
+
     
     def create_AddIngredientNameFrame(self):
         '''Asks user for ingredient name when adding new ingredients'''
@@ -335,17 +382,20 @@ class Program:
         # Create and pack heading
         self.add_ingredient_name_frame_heading = Label(self.add_ingredient_name_frame,
                                                        text = "Enter name of ingredient:")
-        self.add_ingredient_name_frame_heading.grid(row = 0, column = 0, sticky = "NESW")
+        self.add_ingredient_name_frame_heading.grid(row = 0, column = 0, 
+                                                    sticky = "NESW",
+                                                    columnspan = 2)
         
         # Create and pack text box which stores name of ingredient
         self.add_ingredient_name_frame_textbox = Entry(self.add_ingredient_name_frame)
         self.add_ingredient_name_frame_textbox.grid(row = 1, column = 0,
-                                                     sticky = "NESW")
-        
+                                                     sticky = "NESW",
+                                                     columnspan = 2)
         
         # Create and pack save button
         self.add_ingredient_name_frame_savebutt = Button(self.add_ingredient_name_frame,
-                                                         text = "Save")
+                                                         text = "Save",
+                                                         command=lambda: self.save_temp_ingredient_info("quantity_name", self.add_ingredient_name_frame_textbox.get())) 
         self.add_ingredient_name_frame_savebutt.grid(row = 2, column = 1,
                                                      sticky = "NESW")
         
@@ -368,17 +418,19 @@ class Program:
         self.add_ingredient_amount_frame_heading = Label(self.add_ingredient_amount_frame,
                                                          text = "Enter amount of this ingredient type ")
         self.add_ingredient_amount_frame_heading.grid(row = 0, column = 0, 
-                                                      sticky = "NESW")
+                                                      sticky = "NESW",
+                                                      columnspan = 2)
         
         # Creates and displays the name of the ingredient, entered in a previous page
-        self.add_ingredient_amount_frame_quantityname = Label(self.add_ingredient_amount_frame)
-        self.add_ingredient_amount_frame_quantityname.grid(row = 1, column = 0,
-                                                           sticky = "NESW")
+        #self.add_ingredient_amount_frame_quantityname = Label(self.add_ingredient_amount_frame)
+        #self.add_ingredient_amount_frame_quantityname.grid(row = 1, column = 0,
+                                                           #sticky = "NESW")
         
         # Creates and packs entrybox
         self.add_ingredient_amount_frame_textbox = Entry(self.add_ingredient_amount_frame)
         self.add_ingredient_amount_frame_textbox.grid(row = 2, column = 0, 
-                                                      sticky = "NESW")
+                                                      sticky = "NESW",
+                                                      columnspan = 2)
         
         # Creates and packs next button
         self.add_ingredient_amount_frame_nextbutt = Button(self.add_ingredient_amount_frame,
@@ -386,6 +438,12 @@ class Program:
                                                            command=lambda: self.show_frame("ShowCurrentIngredientsFrame"))
         self.add_ingredient_amount_frame_nextbutt.grid(row = 4, column = 0,
                                                        sticky = "NESW")
+        
+        self.add_ingredient_amount_frame_savebutt = Button(self.add_ingredient_amount_frame,
+                                                           text = "Save",
+                                                           command=lambda: self.save_temp_ingredient_info("quantity_amount", self.add_ingredient_amount_frame_textbox.get()))
+        self.add_ingredient_amount_frame_savebutt.grid(row = 4, column = 1,
+                                                      sticky = "NESW")
         
         return self.add_ingredient_amount_frame
     
