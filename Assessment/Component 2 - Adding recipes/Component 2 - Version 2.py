@@ -141,25 +141,26 @@ class Program:
                         print(self.new_ingredient_info)                        
                     
             except ValueError: # If a letter is found in the ingredient amount
-                if "/" in info: # Special case for entering fractions like 3/4
+                if "/" in info: # Special case for entering fractions like 3/4 if user has say wanted to use a tsp quantity type
                     info = str(info) # Turn it into a string
                     
                     if len(self.temp_ingredient_info) == 2: # If this is the first that the user saves their ingredient amount
-                        print("/detected, first time")
-                        #self.temp_ingredient_info.append(info) # Add the quantity amount to the list
-                        #final_ingredient = f"{self.temp_ingredient_info[2]}{self.temp_ingredient_info[0]} {self.temp_ingredient_info[1]}" # Concatnate ingredients info to form final ingredient line
-                        #print(final_ingredient)
-                        ##self.ingredient_info.append(final_ingredient)
-                        ##print(self.ingredient_info)
+                        self.temp_ingredient_info.append(info) # Add the quantity amount to the list
+                        print(self.temp_ingredient_info)
+                        final_ingredient = f"{self.temp_ingredient_info[2]}{self.temp_ingredient_info[0]} {self.temp_ingredient_info[1]}" # Concatnate ingredients info to form final ingredient line, which we will add to the temp_ingredient_info list
+                        print(final_ingredient)
+                        self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
+                        print(self.new_ingredient_info)
                         
                     else: # If user has already saved their ingredient amount
-                        print("/detected, notfirsttime")
-                        #self.temp_ingredient_info.pop(-1) # Remove the current quantity amount
-                        #self.temp_ingredient_info.append(info) # Add the new quantity amount 
-                        #final_ingredient = f"{self.temp_ingredient_info[2]}{self.temp_ingredient_info[0]} {self.temp_ingredient_info[1]}" # Concatnate ingredients info to form final ingredient line
-                        #print(final_ingredient)
-                        ##self.ingredient_info.append(final_ingredient)
-                        ##print(self.ingredient_info)                  
+                        self.temp_ingredient_info.pop(-1) # Removes old quantity value
+                        self.temp_ingredient_info.append(info) # Add the new quantity amount to the list
+                        print(self.temp_ingredient_info)
+                        final_ingredient = f"{self.temp_ingredient_info[2]}{self.temp_ingredient_info[0]} {self.temp_ingredient_info[1]}" # Concatnate ingredients info to form final ingredient line, which we will add to the temp_ingredient_info list
+                        print(final_ingredient)
+                        self.new_ingredient_info.pop(-1) # Removes the old ingredient which user has decided to replace
+                        self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
+                        print(self.new_ingredient_info)                 
                 
                 else:
                     print("enter whole values only")
