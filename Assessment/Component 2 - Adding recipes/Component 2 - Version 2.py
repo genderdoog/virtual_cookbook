@@ -27,12 +27,15 @@ class Program:
         
         # Storing information
         self.new_recipe_info = {} # Creates the main dictionary which we will then dump to a json file
-        self.temp_ingredient_info = [] # This will store information which will then be concatnated to then be added to ingredient_info
+        self.temp_ingredient_info = [] # This will store information which will then be concatnated to then be added to new_ingredient_info
         self.new_ingredient_info = [] # This is the final list of all ingredients, which will be added to new_recipe_info
         
         # When the user is adding ingredient amount, this info will be shown
         self.display_ingredient_name = StringVar() 
         self.display_ingredient_type = StringVar()
+        
+        # When the user is asked if they want to add ingredients to the recipe, we show them this textvariable
+        self.display_ingredients = StringVar()
         
         # Create dictionary to store what windows are in our program
         self.windows = {}
@@ -75,7 +78,7 @@ class Program:
         print(self.new_recipe_info) 
         
     def save_temp_ingredient_info(self, data_type, info):
-        '''This is used to build the ingredients that the user adds'''
+        '''This determines what the save button does while the user is adding ingredients'''
         # If user presses the save button when choosing quantity type
         if data_type == "quantity_type":
             self.temp_ingredient_info = [] # We will first blank out the list that stores the temp_ingredient info, in case user previously added a ingredient
@@ -123,13 +126,13 @@ class Program:
                 
                 else: # Amount entered is valid, so we now add it to temp_ingredient_info
                     if len(self.temp_ingredient_info) == 2: # If this is the first that the user saves their ingredient amount
-                        self.temp_ingredient_info.append(info) # Add the quantity amount to the list
+                        self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
                         print(self.temp_ingredient_info)
                         final_ingredient = f"{self.temp_ingredient_info[2]}{self.temp_ingredient_info[0]} {self.temp_ingredient_info[1]}" # Concatnate ingredients info to form final ingredient line, which we will add to the temp_ingredient_info list
                         print(final_ingredient)
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
                         print(self.new_ingredient_info)
-                        
+                        self.display_ingredients.set(str(self.new_ingredient_info))
                     else: # If user has already saved their ingredient amount
                         self.temp_ingredient_info.pop(-1) # Removes old quantity value
                         self.temp_ingredient_info.append(info) # Add the new quantity amount to the list
@@ -138,7 +141,9 @@ class Program:
                         print(final_ingredient)
                         self.new_ingredient_info.pop(-1) # Removes the old ingredient which user has decided to replace
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
-                        print(self.new_ingredient_info)                        
+                        print(self.new_ingredient_info)
+
+                        self.display_ingredients.set(str(self.new_ingredient_info))
                     
             except ValueError: # If a letter is found in the ingredient amount
                 if "/" in info: # Special case for entering fractions like 3/4 if user has say wanted to use a tsp quantity type
@@ -151,6 +156,7 @@ class Program:
                         print(final_ingredient)
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
                         print(self.new_ingredient_info)
+                        self.display_ingredients.set(str(self.new_ingredient_info))
                         
                     else: # If user has already saved their ingredient amount
                         self.temp_ingredient_info.pop(-1) # Removes old quantity value
@@ -159,11 +165,45 @@ class Program:
                         final_ingredient = f"{self.temp_ingredient_info[2]}{self.temp_ingredient_info[0]} {self.temp_ingredient_info[1]}" # Concatnate ingredients info to form final ingredient line, which we will add to the temp_ingredient_info list
                         print(final_ingredient)
                         self.new_ingredient_info.pop(-1) # Removes the old ingredient which user has decided to replace
-                        self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
-                        print(self.new_ingredient_info)                 
+                        self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary (which will be dumped to json)
+                        print(self.new_ingredient_info)
+                        self.display_ingredients.set(str(self.new_ingredient_info))
                 
                 else:
                     print("enter whole values only")
+        
+        # If user presses save button while on the adding generic text screen            
+        elif data_type == "generic_text":
+            if len(self.temp_ingredient_info) == 1: # If user has not pressed the save button before
+                self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
+                print(self.temp_ingredient_info)
+                final_ingredient = self.temp_ingredient_info[1] # The second item in the temp ingredient dictionary has the string we want to add
+                print(final_ingredient)
+                self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
+                print(self.new_ingredient_info)
+                
+            else:
+                self.temp_ingredient_info.pop(-1) # Removes old generic text
+                self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
+                print(self.temp_ingredient_info)
+                final_ingredient = self.temp_ingredient_info[1] # The second item in the temp ingredient dictionary has the string we want to add
+                print(final_ingredient)
+                self.new_ingredient_info.pop(-1) # Removes the old generic text which user has decided to replace
+                self.new_ingredient_info.append(final_ingredient) # Add generic text to the new ingredient dictionary
+                print(self.new_ingredient_info)   
+            
+                    
+    def create_generic_text_or_other_frame(self):
+        '''If a user wants to add a ingredient that does not require a 
+        quantity type e.g. tsp or g, they need to be sent to another frame. 
+        This code will decide if they should be'''
+        
+        if self.temp_ingredient_info[0] == "generictext": # If user has picked generic text as their ingredient type, we send them to this frame
+            self.create_AddIngredientGenericTextFrame()
+        
+        else: # For any other quantity type, we need send them to the add ingredient name frame
+            self.create_AddIngredientNameFrame()
+        
         
     def create_HomeAddRecipesFrame(self):
         '''Creates homepage of adding recipes'''
@@ -369,11 +409,12 @@ class Program:
                                                          sticky = "NESW",
                                                          columnspan = 3)
         
-        ## Create and pack "current list of ingredients"
-        #self.show_current_ingredients_frame_list = Label(self.show_current_ingredients_frame,
-                                                         #textvariable = self.new_ingredient_info)
-        #self.show_current_ingredients_frame_list.grid(row = 1, column = 0,
-                                                      #sticky = "NESW")
+        # Create and pack "current list of ingredients"
+        self.show_current_ingredients_frame_list = Label(self.show_current_ingredients_frame,
+                                                         textvariable = self.display_ingredients)
+        self.show_current_ingredients_frame_list.grid(row = 1, column = 0,
+                                                      sticky = "NESW",
+                                                      columnspan = 3)
         
         # Create and pack "add ingredients" button
         self.show_current_ingredients_frame_addbutt = Button(self.show_current_ingredients_frame,
@@ -425,10 +466,10 @@ class Program:
                                                               sticky = "NESW",
                                                               columnspan = 2)
         
-        # Create and pack next button, to move onto asking the ingredient name
+        # Create and pack next button, to move onto asking the ingredient name or generic text if the user has selected that option
         self.add_ingredient_quantity_type_frame_nextbutt = Button(self.add_ingredient_quantity_type_frame,
                                                                   text = "Next",
-                                                                  command=lambda: self.show_frame("AddIngredientNameFrame"))
+                                                                  command=self.create_generic_text_or_other_frame)
         self.add_ingredient_quantity_type_frame_nextbutt.grid(row = 2, column = 0,
                                                               sticky = "NESW")
         
@@ -533,25 +574,37 @@ class Program:
         return self.add_ingredient_amount_frame
     
     def create_AddIngredientGenericTextFrame(self):
-        '''If user chooses quantity type generic text, they will be placed on this frame'''
+        '''If user chooses quantity type = "generic text", they will be put on this frame'''
         self.add_ingredient_generic_text_frame = Frame(self.main_container)
         self.add_ingredient_generic_text_frame.grid(row = 0, column = 0,
                                                     sticky = "NESW")
         
         # Create and pack heading
         self.add_ingredient_generic_text_frame_heading = Label(self.add_ingredient_generic_text_frame,
-                                                               text = "Enter text: ")
+                                                               text = "Enter generic text here: ")
         self.add_ingredient_generic_text_frame_heading.grid(row = 0, column = 0,
-                                                            sticky = "NESW")
+                                                            sticky = "NESW",
+                                                            columnspan = 2)
         
         # Creates and packs textbox, where user can input whatever they need for the ingredient
         self.add_ingredient_generic_text_frame_textbox = Entry(self.add_ingredient_generic_text_frame)
         self.add_ingredient_generic_text_frame_textbox.grid(row = 1, column = 0,
-                                                            sticky = "NESW")
+                                                            sticky = "NESW",
+                                                            columnspan = 2)
         
         # Creates and packs next button
+        self.add_ingredient_generic_text_frame_nextbutt = Button(self.add_ingredient_generic_text_frame,
+                                                                 text = "Next",
+                                                                 command=lambda: self.show_frame("ShowCurrentIngredientsFrame"))
+        self.add_ingredient_generic_text_frame_nextbutt.grid(row = 2, column = 0,
+                                                             sticky = "NESW")
         
         # Creates and packs save button
+        self.add_ingredient_generic_text_frame_savebutt = Button(self.add_ingredient_generic_text_frame,
+                                                                 text = "Save",
+                                                                 command=lambda: self.save_temp_ingredient_info("generic_text",  self.add_ingredient_generic_text_frame_textbox.get()))
+        self.add_ingredient_generic_text_frame_savebutt.grid(row = 2, column = 1,
+                                                             sticky = "NESW")
         
                                                                
         
