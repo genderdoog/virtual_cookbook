@@ -49,12 +49,13 @@ class Program:
         # Homepage
         self.windows["HomeAddRecipesFrame"] = self.create_HomeAddRecipesFrame()
         
-        # Getting preliminary information
+        # Getting basic information
         self.windows["AskRecipeNameFrame"] = self.create_AskRecipeNameFrame()
         self.windows["AskRecipeAuthorSourceFrame"] = self.create_AskRecipeAuthorSourceFrame()
         self.windows["AskRecipePrepTimeFrame"] = self.create_AskRecipePrepTimeFrame()
         self.windows["AskRecipeTotalTimeFrame"] = self.create_AskRecipeTotalTimeFrame()
         self.windows["AskRecipeHowManyServesFrame"] = self.create_AskRecipeHowManyServesFrame()
+        self.windows["AskRecipeTimerFrame"] = self.create_AskRecipeTimerFrame()
         
         # Adding ingredients
         self.windows["ShowCurrentIngredientsFrame"] = self.create_ShowCurrentIngredientsFrame()
@@ -648,7 +649,8 @@ class Program:
         
         # Create and pack next button, which is asking for the timer functionality
         self.show_current_instructions_frame_nextbutt = Button(self.show_current_instructions_frame,
-                                                               text = "Next")
+                                                               text = "Next",
+                                                               command=lambda: self.show_frame("AskRecipeTimerFrame"))
         self.show_current_instructions_frame_nextbutt.grid(row = 2, column = 1, 
                                                            sticky = "NESW")
         
@@ -695,6 +697,40 @@ class Program:
         
         return self.add_new_instruction_frame
         
+    
+    def create_AskRecipeTimerFrame(self):
+        '''This will ask the user what they want to set the timer for this recipe'''
+        self.ask_recipe_timer_frame = Frame(self.main_container)
+        self.ask_recipe_timer_frame.grid(row = 0, column = 0, sticky = "NESW")
+        
+        # Create and pack heading when user is inputting integer for timer
+        self.ask_recipe_timer_frame_heading = Label(self.ask_recipe_timer_frame,
+                                                    text = "Enter the number you want to set the timer to")
+        self.ask_recipe_timer_frame_heading.grid(row = 0, column = 0,
+                                                 sticky = "NESW",
+                                                 columnspan = 2)
+        
+        # Create and pack textbox for user input
+        self.ask_recipe_timer_frame_textbox = Entry(self.ask_recipe_timer_frame)
+        self.ask_recipe_timer_frame_textbox.grid(row = 1, column = 0,
+                                                 sticky = "NESW",
+                                                 columnspan = 2)
+        
+        # Create and pack next button
+        self.ask_recipe_timer_frame_nextbutt = Button(self.ask_recipe_timer_frame,
+                                                     text = "Next")
+        self.ask_recipe_timer_frame_nextbutt.grid(row = 2, column = 0,
+                                                  sticky = "NESW")
+        
+        # Create and pack save button
+        self.ask_recipe_timer_frame_savebutt = Button(self.ask_recipe_timer_frame,
+                                                      text = "Save",
+                                                      command=lambda: self.save_information("timer_set_to", int(self.ask_recipe_timer_frame_textbox.get()))) # Set input as integer
+        self.ask_recipe_timer_frame_savebutt.grid(row = 2, column = 1,
+                                                  sticky = "NESW")
+        
+        return self.ask_recipe_timer_frame
+    
     
 # Main program
 if __name__ == "__main__":
