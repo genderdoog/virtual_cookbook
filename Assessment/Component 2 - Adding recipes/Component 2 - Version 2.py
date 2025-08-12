@@ -37,6 +37,11 @@ class Program:
         # When the user is asked if they want to add ingredients to the recipe, we show them this textvariable
         self.display_ingredients = StringVar()
         
+        # When user is adding instructions, these are the related variables
+        self.new_instruction_info = {} # This will be added to new_recipe_info as the value of the key "instructions"
+        self.current_step = IntVar() # While user is adding instructions, the step counter needs to increase automatically
+        self.current_step.set(1) # On startup, we set it to 1
+        
         # Create dictionary to store what windows are in our program
         self.windows = {}
         
@@ -57,6 +62,10 @@ class Program:
         self.windows["AddIngredientNameFrame"] = self.create_AddIngredientNameFrame()
         self.windows["AddIngredientAmountFrame"] = self.create_AddIngredientAmountFrame()
         self.windows["AddIngredientGenericTextFrame"] = self.create_AddIngredientGenericTextFrame()
+        
+        # Adding instructions
+        self.windows["ShowCurrentInstructionsFrame"] = self.create_ShowCurrentInstructionsFrame()
+        self.windows["AddNewInstructionFrame"] = self.create_AddNewInstructionFrame()
         
         # Show home frame first when program starts
         self.show_frame("HomeAddRecipesFrame")   
@@ -191,7 +200,6 @@ class Program:
                 self.new_ingredient_info.pop(-1) # Removes the old generic text which user has decided to replace
                 self.new_ingredient_info.append(final_ingredient) # Add generic text to the new ingredient dictionary
                 print(self.new_ingredient_info)   
-            
                     
     def create_generic_text_or_other_frame(self):
         '''If a user wants to add a ingredient that does not require a 
@@ -203,6 +211,12 @@ class Program:
         
         else: # For any other quantity type, we need send them to the add ingredient name frame
             self.create_AddIngredientNameFrame()
+        
+    def save_instruction_info(self, instruction):
+        '''When the user presses the save button after entering into the instructions, this is what will run'''
+        self.new_instruction_info[f"step{self.current_step.get()}"] = instruction # Add the instruction, which will save the step to new_instruction info
+        self.current_step.set(self.current_step.get() + 1) # Increment the step by one, so that if user adds another instruction it will adjust accordingly
+            
         
         
     def create_HomeAddRecipesFrame(self):
@@ -432,7 +446,8 @@ class Program:
         
         # Create and pack "next" button
         self.show_current_ingredients_frame_nextbutt = Button(self.show_current_ingredients_frame,
-                                                              text = "Next")
+                                                              text = "Next",
+                                                              command=lambda: self.show_frame("ShowCurrentInstructionsFrame"))
         self.show_current_ingredients_frame_nextbutt.grid(row = 2, column = 1,
                                                           sticky = "NESW")
         
@@ -609,6 +624,77 @@ class Program:
                                                                
         
         return self.add_ingredient_generic_text_frame
+    
+    
+    def create_ShowCurrentInstructionsFrame(self):
+        '''When the user wants to add instructions, this frame will show them all the instructions they have added so far'''
+        self.show_current_instructions_frame = Frame(self.main_container)
+        self.show_current_instructions_frame.grid(row = 0, column = 0,
+                                                  sticky = "NESW")
+        
+        # Create and pack heading widget
+        self.show_current_instructions_frame_heading = Label(self.show_current_instructions_frame,
+                                                             text = "Current instructions:")
+        self.show_current_instructions_frame_heading.grid(row = 0, column = 0,
+                                                          sticky = "NESW",
+                                                          columnspan = 3)
+        
+        # Create and pack add button, so that user can add a instruction
+        self.show_current_instructions_frame_addbutt = Button(self.show_current_instructions_frame,
+                                                              text = "Add",
+                                                              command=lambda: self.show_frame("AddNewInstructionFrame"))
+        self.show_current_instructions_frame_addbutt.grid(row = 2, column = 0,
+                                                          sticky = "NESW")
+        
+        # Create and pack next button, which is asking for the timer functionality
+        self.show_current_instructions_frame_nextbutt = Button(self.show_current_instructions_frame,
+                                                               text = "Next")
+        self.show_current_instructions_frame_nextbutt.grid(row = 2, column = 1, 
+                                                           sticky = "NESW")
+        
+        # Create and pack save button, to save all instructions to new_recipe_info
+        self.show_current_instructions_frame_savebutt = Button(self.show_current_instructions_frame,
+                                                               text = "Save",
+                                                               command=lambda: self.save_information("instructions", self.new_instruction_info))
+        self.show_current_instructions_frame_savebutt.grid(row = 2, column = 2,
+                                                           sticky = "NESW")
+        
+        return self.show_current_instructions_frame
+    
+    def create_AddNewInstructionFrame(self):
+        '''This frame allows the user to input and save a new instruction to their recipe'''
+        self.add_new_instruction_frame = Frame(self.main_container)
+        self.add_new_instruction_frame.grid(row = 0, column = 0, sticky = "NESW")
+        
+        # Create and pack heading
+        self.add_new_instruction_frame_heading = Label(self.add_new_instruction_frame,
+                                                       text = "Enter instruction:")
+        self.add_new_instruction_frame_heading.grid(row = 0, column = 0,
+                                                    sticky = "NESW",
+                                                    columnspan = 2)
+        
+        # Create and pack text box for inputting instruction
+        self.add_new_instruction_frame_textbox = Entry(self.add_new_instruction_frame)
+        self.add_new_instruction_frame_textbox.grid(row = 1, column = 0,
+                                                    sticky = "NESW",
+                                                    columnspan = 2)
+        
+        # Create and pack next button, which will return the user back to the show_current_ingredients_frame
+        self.add_new_instruction_frame_nextbutt = Button(self.add_new_instruction_frame,
+                                                         text = "Next",
+                                                         command=lambda: self.show_frame("ShowCurrentInstructionsFrame"))
+        self.add_new_instruction_frame_nextbutt.grid(row = 2, column = 0,
+                                                     sticky = "NESW")
+        
+        # Create and pack save button
+        self.add_new_instruction_frame_savebutt = Button(self.add_new_instruction_frame,
+                                                         text = "Save",
+                                                         command=lambda: self.save_instruction_info(self.add_new_instruction_frame_textbox.get()))
+        self.add_new_instruction_frame_savebutt.grid(row = 2, column = 1,
+                                                     sticky = "NESW")
+        
+        return self.add_new_instruction_frame
+        
     
 # Main program
 if __name__ == "__main__":
