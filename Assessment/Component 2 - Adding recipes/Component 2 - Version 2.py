@@ -9,9 +9,11 @@ Version 2: minimum viable product GUI
 """
 
 import json
+import shutil # For copying the uploaded image into the recipe folder
 import os
 from tkinter import *
 from tkinter import ttk # For checkbox
+from tkinter import filedialog # For image uploading
 
 class Program:
     
@@ -67,6 +69,12 @@ class Program:
         # Adding instructions
         self.windows["ShowCurrentInstructionsFrame"] = self.create_ShowCurrentInstructionsFrame()
         self.windows["AddNewInstructionFrame"] = self.create_AddNewInstructionFrame()
+        
+        # Image uploading when adding recipe
+        self.windows["UploadImageFrame"] = self.create_UploadImageFrame()
+        
+        # Final save button for recipe
+        self.windows["SaveRecipeToJsonFrame"] = self.create_SaveRecipeToJsonFrame()
         
         # Show home frame first when program starts
         self.show_frame("HomeAddRecipesFrame")   
@@ -218,7 +226,49 @@ class Program:
         self.new_instruction_info[f"step{self.current_step.get()}"] = instruction # Add the instruction, which will save the step to new_instruction info
         self.current_step.set(self.current_step.get() + 1) # Increment the step by one, so that if user adds another instruction it will adjust accordingly
             
+    def upload_file(self):
+        '''When the user presses this button, it will open a popup windows
+        where the user can then select the image they would like to place
+        in their recipe'''
+        file_path = filedialog.askopenfilename() # Open windows prompt
+        if file_path:
+            self.new_recipe_info["path_to_image"] = file_path # Stores it in new_recipe_info
+            print(self.new_recipe_info)             
         
+    def dump_new_recipe_to_json(self):
+        '''When the user is finished adding detail of recipe, they press the
+        save button and this is what will run'''
+        print("-----")
+        print(self.new_recipe_info)
+        
+        # Json and image file management
+        # We first need to find out the name of the folder which will house this recipe
+        directory_recipe_name = self.new_recipe_info["name"].lower().replace(" ", "_") # This name will be used to create the folder of the recipe
+        
+        # Create a directory which will house the recipe and image
+        os.mkdir("../data/" + directory_recipe_name) 
+        
+        # Copy the image uploaded by user into the the newly created recipe folder
+        shutil.copy(self.new_recipe_info["path_to_image"], "../data/" + directory_recipe_name + "/image.png")
+        
+        # Remove the path_to_image key in new_recipe_info, as that is not required when dumping recipe info to json
+        self.new_recipe_info.pop("path_to_image")
+        
+        # Create json file in the newly created recipe folder
+        with open("../data/" + directory_recipe_name + "/info.json", "w") as f:
+            json.dump(self.new_recipe_info, f, indent = 4)        
+        
+        # Updating recipe_index.json
+        # Read the current recipes in the index
+        with open("../data/recipe_index.json", "r") as f:
+            current_json_index = json.load(f)
+        
+        current_json_index[self.new_recipe_info["name"]] = directory_recipe_name # Add the appropriate key and value to the temporary dictionary
+        
+        # Write this newly updated dictionary back into recipe_index.json 
+        with open("../data/recipe_index.json", "w") as f:
+            json.dump(current_json_index, f, indent = 4)        
+       
         
     def create_HomeAddRecipesFrame(self):
         '''Creates homepage of adding recipes'''
@@ -705,7 +755,7 @@ class Program:
         
         # Create and pack heading when user is inputting integer for timer
         self.ask_recipe_timer_frame_heading = Label(self.ask_recipe_timer_frame,
-                                                    text = "Enter the number you want to set the timer to")
+                                                    text = "Enter the number (mins) you want to set the timer to")
         self.ask_recipe_timer_frame_heading.grid(row = 0, column = 0,
                                                  sticky = "NESW",
                                                  columnspan = 2)
@@ -718,7 +768,8 @@ class Program:
         
         # Create and pack next button
         self.ask_recipe_timer_frame_nextbutt = Button(self.ask_recipe_timer_frame,
-                                                     text = "Next")
+                                                     text = "Next",
+                                                     command=lambda: self.show_frame("UploadImageFrame"))
         self.ask_recipe_timer_frame_nextbutt.grid(row = 2, column = 0,
                                                   sticky = "NESW")
         
@@ -731,6 +782,64 @@ class Program:
         
         return self.ask_recipe_timer_frame
     
+    def create_UploadImageFrame(self):
+        '''This is the frame where the user can upload an image to add to their recipe'''
+        self.upload_image_frame = Frame(self.main_container)
+        self.upload_image_frame.grid(row = 0, column = 0, sticky = "NESW")
+        
+        # Create and pack heading
+        self.upload_image_frame_heading = Label(self.upload_image_frame, 
+                                                text = "Press the upload button to add an image to your recipe.")
+        self.upload_image_frame_heading.grid(row = 0, column = 0, 
+                                             sticky = "NESW",
+                                             columnspan = 2)
+        
+        # Create and pack next button
+        self.upload_image_frame_nextbutt = Button(self.upload_image_frame,
+                                                  text = "Next",
+                                                  command=lambda: self.show_frame("SaveRecipeToJsonFrame"))
+        self.upload_image_frame_nextbutt.grid(row = 1, column = 0,
+                                              sticky = "NESW")
+        
+        # Create and pack upload button
+        self.upload_image_frame_upbutt = Button(self.upload_image_frame,
+                                                text = "Upload",
+                                                command = self.upload_file)
+        self.upload_image_frame_upbutt.grid(row = 1, column = 1,
+                                            sticky = "NESW")
+
+        
+        return self.upload_image_frame
+    
+    def create_SaveRecipeToJsonFrame(self):
+        '''This frame is where the user will dump the info to json'''
+        self.save_recipe_to_json_frame = Frame(self.main_container)
+        self.save_recipe_to_json_frame.grid(row = 0, column = 0,
+                                            sticky = "NESW")
+        
+        # Create and pack heading
+        self.save_recipe_to_json_frame_heading = Label(self.save_recipe_to_json_frame,
+                                                      text = "Press the save button to add you recipe.")
+        self.save_recipe_to_json_frame_heading.grid(row = 0, column = 0,
+                                                    sticky = "NESW",
+                                                    columnspan = 2)
+        
+        # Create and pack next button
+        self.save_recipe_to_json_frame_nextbutt = Button(self.save_recipe_to_json_frame,
+                                                         text = "Return to home",
+                                                         command=lambda: self.show_frame("HomeAddRecipesFrame"))
+        self.save_recipe_to_json_frame_nextbutt.grid(row = 1, column = 0,
+                                                     sticky = "NESW")
+        
+        # Create and pack savebutton
+        self.save_recipe_to_json_frame_savebutt = Button(self.save_recipe_to_json_frame,
+                                                         text = "Save recipe",
+                                                         command = self.dump_new_recipe_to_json)
+        self.save_recipe_to_json_frame_savebutt.grid(row = 1, column = 1,
+                                                     sticky = "NESW")
+        
+        return self.save_recipe_to_json_frame
+        
     
 # Main program
 if __name__ == "__main__":
