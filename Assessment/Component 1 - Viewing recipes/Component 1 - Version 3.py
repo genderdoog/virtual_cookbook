@@ -41,11 +41,11 @@ class Program:
         self.windows = {}
         
         # Creating windows in our GUI
-        self.windows["ChoosingRecipeFrame"] = self.create_ChoosingRecipeFrame()
-        self.windows["RecipeFrame"] = self.create_RecipeFrame("chocolate_chip_cookie") # We add an example recipe into the function
+        self.windows["HomeChoosingToViewRecipeFrame"] = self.create_HomeChoosingToViewRecipeFrame()
+        self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("chocolate_chip_cookie") # We add an example recipe into the function
         
         # Show choosing recipe frame first when program is started
-        self.show_frame("ChoosingRecipeFrame")
+        self.show_frame("HomeChoosingToViewRecipeFrame")
         
     def show_frame(self, name):
         '''Show a frame, then bring it to the top'''
@@ -62,11 +62,11 @@ class Program:
         self.timer_in_sec -= 1
         
     
-    def create_ChoosingRecipeFrame(self):
+    def create_HomeChoosingToViewRecipeFrame(self):
         '''Menu which allows user to pick and choose a recipe'''
         # Create choose recipe frame window
-        self.choose_recipe_frame = Frame(self.main_container)
-        self.choose_recipe_frame.grid(row = 0, column = 0, sticky = "NESW")
+        self.home_choosing_to_view_recipe_frame = Frame(self.main_container)
+        self.home_choosing_to_view_recipe_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
         with open("../data/recipe_index.json") as f:
@@ -76,31 +76,33 @@ class Program:
         list_recipes_folder_name = list(dict_recipes_combobox.values()) # Creates a list which is of the folder type names of each recipe (used for random recipe button)
         
         # Create and pack combo box
-        self.choose_recipe_combobox = ttk.Combobox(self.choose_recipe_frame, 
+        self.home_choosing_to_view_recipe_frame_combobox = ttk.Combobox(self.home_choosing_to_view_recipe_frame, 
                                                    state = "readonly",
                                                    values = list_recipes_combobox_name)
-        self.choose_recipe_combobox.grid(row = 0, column = 0, sticky = "NESW")
+        self.home_choosing_to_view_recipe_frame_combobox.grid(row = 0, column = 0, 
+                                                    sticky = "NESW")
         
         # Create and pack button which will change the view recipes frame
-        self.choose_recipe_selbutt = Button(self.choose_recipe_frame, 
+        self.home_choosing_to_view_recipe_frame_viewbutt = Button(self.home_choosing_to_view_recipe_frame, 
                                             # We want to parse in the name of the folder which holds the image and json of the recipe, hence we use the value of the dictionary
-                                            text = "View recipe", command=lambda: self.create_RecipeFrame(dict_recipes_combobox[self.choose_recipe_combobox.get()])) 
-        self.choose_recipe_selbutt.grid(row = 1, column = 0, sticky="NESW")
+                                            text = "View recipe", command=lambda: self.create_ShowRecipeFrame(dict_recipes_combobox[self.home_choosing_to_view_recipe_frame_combobox.get()])) 
+        self.home_choosing_to_view_recipe_frame_viewbutt.grid(row = 1, column = 0, sticky="NESW")
         
         # Similar to the view recipe button, except it uses a random item from the list "list_recipes_folder_name"
-        self.choose_recipe_ranbutt = Button(self.choose_recipe_frame, 
+        self.home_choosing_to_view_recipe_frame_ranbutt = Button(self.home_choosing_to_view_recipe_frame, 
                                             text = "Pick a random recipe for me!",
-                                            command=lambda: self.create_RecipeFrame(random.choice(list_recipes_folder_name)))
-        self.choose_recipe_ranbutt.grid(row = 2, column = 0, sticky = "NESW")
+                                            command=lambda: self.create_ShowRecipeFrame(random.choice(list_recipes_folder_name)))
+        self.home_choosing_to_view_recipe_frame_ranbutt.grid(row = 2, column = 0, 
+                                                sticky = "NESW")
                                             
         
-        return self.choose_recipe_frame
+        return self.home_choosing_to_view_recipe_frame
     
-    def create_RecipeFrame(self, recipe_folder_name):
+    def create_ShowRecipeFrame(self, recipe_folder_name):
         '''Creates recipe frame for chosen recipe'''
         # Creates frame for each widget in recipe frame
-        self.recipe_frame = Frame(self.main_container)
-        self.recipe_frame.grid(row=0, column=0, sticky="NESW")
+        self.show_recipe_frame = Frame(self.main_container)
+        self.show_recipe_frame.grid(row=0, column=0, sticky="NESW")
         
         # Open current recipe information from info.json file
         with open("../data/" + recipe_folder_name + "/info.json") as f:
@@ -111,16 +113,16 @@ class Program:
         self.recipe_name.set(current_recipe["name"])
         
         # Create then pack widget
-        self.recipe_name_heading = Label(self.recipe_frame, 
+        self.show_recipe_frame_heading = Label(self.show_recipe_frame, 
                                           textvariable=self.recipe_name, bg="orange")
-        self.recipe_name_heading.grid(row = 0, column = 0, sticky="NESW")
+        self.show_recipe_frame_heading.grid(row = 0, column = 0, sticky="NESW")
         
         # Show image
-        self.recipe_image = PhotoImage(file="../data/" + recipe_folder_name + "/image.png") # Create image widget
-        self.recipe_image = self.recipe_image.subsample(12) # Resizes image to be smaller
+        self.show_recipe_frame_image = PhotoImage(file="../data/" + recipe_folder_name + "/image.png") # Create image widget
+        self.show_recipe_frame_image = self.show_recipe_frame_image.subsample(12) # Resizes image to be smaller
         # Create then show widget with the image inside
-        self.recipe_image_frame = Label(self.recipe_frame, image = self.recipe_image, bg="green")
-        self.recipe_image_frame.grid(row = 1, column = 0, sticky = "NESW")
+        self.show_recipe_frame_image_frame = Label(self.show_recipe_frame, image = self.show_recipe_frame_image, bg="green")
+        self.show_recipe_frame_image_frame.grid(row = 1, column = 0, sticky = "NESW")
         
         # Showing other recipe information
         self.building_recipe_info = "" # Create a temporary string so that we can add info to the textbox of the recipe
@@ -135,9 +137,10 @@ class Program:
         self.recipe_info.set(self.building_recipe_info)
         
         # Show recipe info box
-        self.recipe_info_textbox = Label(self.recipe_frame, 
+        self.show_recipe_frame_recipe_info_textbox = Label(self.show_recipe_frame, 
                                          textvariable=self.recipe_info, bg="yellow")
-        self.recipe_info_textbox.grid(row = 2, column = 0, sticky="NESW")
+        self.show_recipe_frame_recipe_info_textbox.grid(row = 2, column = 0, 
+                                                        sticky="NESW")
         
         # Show recipe ingredients
         self.building_recipe_ingredients = "" # Once again we set a temporary variable which strings will be joined together
@@ -150,10 +153,10 @@ class Program:
         self.recipe_ingredients.set(self.building_recipe_ingredients)
         
         # Show ingredients list
-        self.recipe_ingredients_textbox = Label(self.recipe_frame,
+        self.show_recipe_frame_ingredients_textbox = Label(self.show_recipe_frame,
                                                textvariable=self.recipe_ingredients, 
                                                bg="red", justify = LEFT)
-        self.recipe_ingredients_textbox.grid(row = 0, column = 1, sticky="N",
+        self.show_recipe_frame_ingredients_textbox.grid(row = 0, column = 1, sticky="N",
                                              rowspan = 3)
         
         # Show recipe instructions
@@ -169,11 +172,12 @@ class Program:
         self.recipe_instructions.set(self.building_recipe_instructions)
         
         # Create then pack recipe instructions
-        self.recipe_instructions_textbox = Label(self.recipe_frame,
+        self.show_recipe_frame_instructions_textbox = Label(self.show_recipe_frame,
                                          textvariable=self.recipe_instructions,
                                          wraplength=300, justify = LEFT)
-        self.recipe_instructions_textbox.grid(row = 0, column = 2, sticky="NESW",
-                                              rowspan = 3)
+        self.show_recipe_frame_instructions_textbox.grid(row = 0, column = 2, 
+                                                         sticky="NESW",
+                                                         rowspan = 3)
         
         # Getting timer information from json file
         self.timer_in_min = current_recipe["timer_set_to"] # Find the set timer in minutes from json file
@@ -181,22 +185,23 @@ class Program:
         self.timer_in_sec = self.timer_in_min * 60 # Convert minutes to seconds, which will be used for our calculations
 
         # Time textlabel
-        self.timer_label = Label(self.recipe_frame, textvariable=self.recipe_timer, 
+        self.show_recipe_frame_timer_label = Label(self.show_recipe_frame, textvariable=self.recipe_timer, 
                                  bg="yellow")
-        self.timer_label.grid(row = 0, column = 3, sticky = "NESW")
+        self.show_recipe_frame_timer_label .grid(row = 0, column = 3, 
+                                                 sticky = "NESW")
         
         # Timer start button
-        self.timer_start_button = Button(self.recipe_frame, text = "Start timer", 
-                                         command=self.run_timer)
-        self.timer_start_button.grid(row = 1, column = 3, sticky = "NESW")
+        self.show_recipe_frame_timer_startbutt = Button(self.show_recipe_frame, 
+                                                        text = "Start timer",
+                                                        command=self.run_timer)
+        self.show_recipe_frame_timer_startbutt.grid(row = 1, column = 3, sticky = "NESW")
         
-        # Back button
         # Back button (return to main menu)
-        self.back_button = Button(self.recipe_frame, text = "Back",
-                                  command=lambda: self.show_frame("ChoosingRecipeFrame"))
-        self.back_button.grid(row = 3, column = 0, columnspan = 4, sticky="NESW")        
+        self.show_recipe_frame_backbutt = Button(self.show_recipe_frame, text = "Back",
+                                  command=lambda: self.show_frame("HomeChoosingToViewRecipeFrame"))
+        self.show_recipe_frame_backbutt.grid(row = 3, column = 0, columnspan = 4, sticky="NESW")        
         
-        return self.recipe_frame
+        return self.show_recipe_frame
     
 # Main program
 if __name__ == "__main__":
