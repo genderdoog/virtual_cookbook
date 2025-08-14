@@ -92,6 +92,14 @@ class Program:
       
     def save_information(self, data_type, info):
         '''When the users presses this button, it saves it to the main dictionary'''
+        if data_type == "name": # This clears the values, when user adds recipes back to back.
+            self.new_recipe_info = {} # Creates the main dictionary which we will then dump to a json file
+            self.temp_ingredient_info = [] # This will store information which will then be concatnated to then be added to new_ingredient_info
+            self.new_ingredient_info = [] # This is the final list of all ingredients, which will be added to new_recipe_info            
+            self.new_instruction_info = {} # This will be added to new_recipe_info as the value of the key "instructions"
+            self.current_step.set(1) # On reset, we set it to 1
+            
+        # For all other frames other than asking for the recipe name
         self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
         print(self.new_recipe_info) 
         
@@ -222,9 +230,10 @@ class Program:
             self.create_AddIngredientNameFrame()
         
     def save_instruction_info(self, instruction):
-        '''When the user presses the save button after entering into the instructions, this is what will run'''
+        '''When the user presses the save button after entering into the instructions, this is what will be run''' 
         self.new_instruction_info[f"step{self.current_step.get()}"] = instruction # Add the instruction, which will save the step to new_instruction info
         self.current_step.set(self.current_step.get() + 1) # Increment the step by one, so that if user adds another instruction it will adjust accordingly
+
             
     def upload_file(self):
         '''When the user presses this button, it will open a popup windows
