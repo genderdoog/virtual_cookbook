@@ -272,7 +272,7 @@ class Program:
         with open("../data/recipe_index.json", "r") as f:
             current_json_index = json.load(f)
         
-        current_json_index[self.new_recipe_info["name"]] = directory_recipe_name # Add the appropriate key and value to the temporary dictionary
+        current_json_index[self.new_recipe_info["name"]] = directory_recipe_name # Add the appropriate key and value to the index from the temporary dictionary
         
         # Write this newly updated dictionary back into recipe_index.json 
         with open("../data/recipe_index.json", "w") as f:
