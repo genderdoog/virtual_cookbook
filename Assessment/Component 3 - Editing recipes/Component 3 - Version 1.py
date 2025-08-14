@@ -74,6 +74,44 @@ class Program:
         # Change frames
         self.show_frame("HomeEditSpecificRecipeFrame")
     
+    def delete_recipe(self):
+        '''Deletes the specified recipe from /data'''
+        
+        # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
+        with open("../data/recipe_index.json") as f:
+            dict_recipes_combobox = json.load(f)  
+        
+        directory_recipe_name = self.edited_recipe_info["name"].lower().replace(" ", "_") # First find the name of the recipe in terms of the folder name
+        
+        shutil.rmtree("../data/" + directory_recipe_name) # Remove the data from that recipe
+        
+        # Updating index file
+        # Read the current recipes in the index
+        with open("../data/recipe_index.json", "r") as f:
+            current_json_index = json.load(f)
+            
+        current_json_index.pop(self.edited_recipe_info["name"]) # Remove that recipe from the json index
+        
+        # Write this newly updated dictionary back into recipe_index.json 
+        with open("../data/recipe_index.json", "w") as f:
+            json.dump(current_json_index, f, indent = 4)
+            
+        # Update combobox, this is so that the user doesn't see it again once it is deleted.
+        # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
+        with open("../data/recipe_index.json") as f:
+            dict_recipes_combobox = json.load(f)        
+        
+        self.list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Creates a list of the non-folder names of the recipes
+        
+        # Replace the combobox that is there to force a refresh of contents
+        self.home_edit_recipes_frame_combobox = ttk.Combobox(self.home_edit_recipes_frame,
+                                                             state = "readonly",
+                                                             values = self.list_recipes_combobox_name)
+        self.home_edit_recipes_frame_combobox.grid(row = 1, column = 0,
+                                                   sticky = "NESW")
+        
+        self.show_frame("HomeEditRecipesFrame") # Return user to homepage
+    
     def create_HomeEditRecipesFrame(self):
         '''Creates homepage frame for adding recipes'''
         self.home_edit_recipes_frame = Frame(self.main_container)
@@ -89,12 +127,12 @@ class Program:
         with open("../data/recipe_index.json") as f:
             dict_recipes_combobox = json.load(f)        
         
-        list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Used for the combobox   
+        self.list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Used for the combobox   
         
         # Create and pack combobox
         self.home_edit_recipes_frame_combobox = ttk.Combobox(self.home_edit_recipes_frame,
                                                              state = "readonly",
-                                                             values = list_recipes_combobox_name)
+                                                             values = self.list_recipes_combobox_name)
         self.home_edit_recipes_frame_combobox.grid(row = 1, column = 0,
                                                    sticky = "NESW")
         
@@ -130,7 +168,8 @@ class Program:
         
         # Create and pack delete recipe button
         self.home_edit_specific_recipe_frame_delbutt = Button(self.home_edit_specific_recipe_frame,
-                                                              text = "Delete recipe")
+                                                              text = "Delete recipe",
+                                                              command = self.delete_recipe)
         self.home_edit_specific_recipe_frame_delbutt.grid(row = 2, column = 0,
                                                           sticky = "NESW")
         
