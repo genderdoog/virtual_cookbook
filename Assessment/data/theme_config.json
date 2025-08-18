@@ -4,7 +4,18 @@
         "bg": "#ffffff",
         "heading_bg": "#ff0000",
         "heading_txt": "#ffffff",
-        "button_bg": "#4f4f4f",
+        "subheading_bg": "#007319",
+        "subheading_txt": "#ffffff",
+        "button_bg": "#f0f0f0",
+        "button_txt": "#000000"
+    },
+    "Dark theme": {
+        "bg": "#000000",
+        "heading_bg": "#00ff37",
+        "heading_txt": "#000000",
+        "subheading_bg": "#b5ffc5",
+        "subheading_txt": "#000000",
+        "button_bg": "#568560",
         "button_txt": "#000000"
     }
 }
