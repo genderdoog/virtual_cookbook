@@ -20,9 +20,17 @@ class Program:
         self.root = Tk()
         self.root.title("Component 3 - Version 1")
         
+        # Make the root window expandable
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)                
+        
         # Generate main window container
         self.main_container = Frame(self.root)
         self.main_container.grid(row=0, column=0, sticky="NESW")
+        
+        # Make the main container expandable
+        self.main_container.grid_rowconfigure(0, weight=1)
+        self.main_container.grid_columnconfigure(0, weight=1)        
         
         # Storing information
         self.edited_recipe_info = {}
@@ -117,11 +125,23 @@ class Program:
         self.home_edit_recipes_frame = Frame(self.main_container)
         self.home_edit_recipes_frame.grid(row = 0, column = 0, sticky = "NESW") 
         
+        # Used in conjunction with sticky to make it fill the window
+        self.home_edit_recipes_frame.columnconfigure([0], minsize=150)
+        self.home_edit_recipes_frame.rowconfigure([0,1,2], minsize=50)
+        
+        # Make each grid in the frame expandable
+        for i in range(3): # 3 rows
+            self.home_edit_recipes_frame.grid_rowconfigure(i, weight=1)
+        
+        for j in range(1): # 1 column
+            self.home_edit_recipes_frame.grid_columnconfigure(j, weight=1)        
+        
         # Create and pack heading
         self.home_edit_recipes_frame_heading = Label(self.home_edit_recipes_frame,
                                                      text = "Edit recipes")
         self.home_edit_recipes_frame_heading.grid(row = 0, column = 0,
-                                                  sticky = "NESW")
+                                                  sticky = "NESW",
+                                                  padx = 10, pady = 10)
         
         # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
         with open("../data/recipe_index.json") as f:
@@ -134,14 +154,16 @@ class Program:
                                                              state = "readonly",
                                                              values = self.list_recipes_combobox_name)
         self.home_edit_recipes_frame_combobox.grid(row = 1, column = 0,
-                                                   sticky = "NESW")
+                                                   sticky = "NESW",
+                                                   padx = 10, pady = 10)
         
         # Create and pack "edit!" button
         self.home_edit_recipes_frame_editbutt = Button(self.home_edit_recipes_frame,
                                                        text = "Edit!",
                                                        command = self.find_selected_recipe)
         self.home_edit_recipes_frame_editbutt.grid(row = 2, column = 0,
-                                                   sticky = "NESW")
+                                                   sticky = "NESW",
+                                                   padx = 10, pady = 10)
         
         return self.home_edit_recipes_frame
     
@@ -153,25 +175,47 @@ class Program:
         self.home_edit_specific_recipe_frame.grid(row = 0, column = 0, 
                                                   sticky = "NESW")
         
+        # Used in conjunction with sticky to make it fill the window
+        self.home_edit_specific_recipe_frame.columnconfigure([0], minsize=150)
+        self.home_edit_specific_recipe_frame.rowconfigure([0,1,2,3], minsize=50)
+        
+        # Make each grid in the frame expandable
+        for i in range(4): # 4 rows
+            self.home_edit_specific_recipe_frame.grid_rowconfigure(i, weight=1)
+        
+        for j in range(1): # 1 column
+            self.home_edit_specific_recipe_frame.grid_columnconfigure(j, weight=1)        
+        
         # Create and pack heading
         self.home_edit_specific_recipe_frame_heading = Label(self.home_edit_specific_recipe_frame,
                                                              text = "Editings details for recipe named:")
         self.home_edit_specific_recipe_frame_heading.grid(row = 0, column = 0,
-                                                         sticky = "NESW")
+                                                         sticky = "NESW",
+                                                         padx = 10)
         
         # Create and pack recipe name
         self.home_edit_specific_recipe_frame_displayname = Label(self.home_edit_specific_recipe_frame,
                                                                  textvariable = self.display_recipe_name_edit_homepage)
 
         self.home_edit_specific_recipe_frame_displayname.grid(row = 1, column = 0,
-                                                              sticky = "NESW")
+                                                              sticky = "NESW",
+                                                              padx = 10)
         
         # Create and pack delete recipe button
         self.home_edit_specific_recipe_frame_delbutt = Button(self.home_edit_specific_recipe_frame,
                                                               text = "Delete recipe",
                                                               command = self.delete_recipe)
         self.home_edit_specific_recipe_frame_delbutt.grid(row = 2, column = 0,
-                                                          sticky = "NESW")
+                                                          sticky = "NESW",
+                                                          padx = 10, pady = 10)
+        
+        # Create and pack back button 
+        self.home_edit_specific_recipe_frame_backbutt = Button(self.home_edit_specific_recipe_frame,
+                                                               text = "Back",
+                                                               command=lambda: self.show_frame("HomeEditRecipesFrame"))
+        self.home_edit_specific_recipe_frame_backbutt.grid(row = 3, column = 0,
+                                                           sticky = "NESW",
+                                                           padx = 10, pady = 10)
         
         return self.home_edit_specific_recipe_frame
     
