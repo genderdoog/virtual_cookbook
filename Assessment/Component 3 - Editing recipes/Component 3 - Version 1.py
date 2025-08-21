@@ -33,7 +33,7 @@ class Program:
         self.main_container.grid_columnconfigure(0, weight=1)        
         
         # Storing information
-        self.edited_recipe_info = {}
+        self.edited_recipe_info = {} 
         self.display_recipe_name_edit_homepage = StringVar()
         
         # Create dictionary to store what windows are in our program
@@ -127,10 +127,10 @@ class Program:
         
         # Used in conjunction with sticky to make it fill the window
         self.home_edit_recipes_frame.columnconfigure([0], minsize=150)
-        self.home_edit_recipes_frame.rowconfigure([0,1,2], minsize=50)
+        self.home_edit_recipes_frame.rowconfigure([0,1,2,3], minsize=50)
         
         # Make each grid in the frame expandable
-        for i in range(3): # 3 rows
+        for i in range(4): # 4 rows
             self.home_edit_recipes_frame.grid_rowconfigure(i, weight=1)
         
         for j in range(1): # 1 column
@@ -164,6 +164,14 @@ class Program:
         self.home_edit_recipes_frame_editbutt.grid(row = 2, column = 0,
                                                    sticky = "NESW",
                                                    padx = 10, pady = 10)
+        
+        # Create and pack back button 
+        self.home_edit_recipes_frame_backbutt = Button(self.home_edit_recipes_frame,
+                                                               text = "Back")
+        self.home_edit_recipes_frame_backbutt.grid(row = 3, column = 0,
+                                                           sticky = "NESW",
+                                                           padx = 10, pady = 10)        
+        
         
         return self.home_edit_recipes_frame
     

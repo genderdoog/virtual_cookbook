@@ -250,6 +250,7 @@ class Program:
         self.settings_frame_combobox1 = ttk.Combobox(self.settings_frame,
                                                      state = "readonly",
                                                      values = list_theme_names)
+        self.settings_frame_combobox1.current() 
         self.settings_frame_combobox1.grid(row = 1, column = 1,
                                            sticky = "NESW",
                                            padx = 10, pady = 10)

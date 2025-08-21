@@ -79,10 +79,10 @@ class Program:
         
         # Used in conjunction with sticky to make it fill the window
         self.home_choosing_to_view_recipe_frame.columnconfigure([0], minsize=150)
-        self.home_choosing_to_view_recipe_frame.rowconfigure([0,1,2], minsize=50)
+        self.home_choosing_to_view_recipe_frame.rowconfigure([0,1,2,3], minsize=50)
         
         # Make each grid in the frame expandable
-        for i in range(3): # 3 rows
+        for i in range(4): # 4 rows
             self.home_choosing_to_view_recipe_frame.grid_rowconfigure(i, weight=1)
         
         for j in range(1): # 2 column
@@ -99,6 +99,7 @@ class Program:
         self.home_choosing_to_view_recipe_frame_combobox = ttk.Combobox(self.home_choosing_to_view_recipe_frame, 
                                                    state = "readonly",
                                                    values = list_recipes_combobox_name)
+        self.home_choosing_to_view_recipe_frame_combobox.current(0) # Ensures that the first recipe is auto selected
         self.home_choosing_to_view_recipe_frame_combobox.grid(row = 0, column = 0, 
                                                     sticky = "NESW",
                                                     padx = 10, pady = 10)
@@ -119,6 +120,14 @@ class Program:
         self.home_choosing_to_view_recipe_frame_ranbutt.grid(row = 2, column = 0, 
                                                 sticky = "NESW", padx = 10,
                                                 pady = 10)
+        
+        # Create and pack back button
+        self.home_choosing_to_view_recipe_frame_backbutt = Button(self.home_choosing_to_view_recipe_frame,
+                                                                  text = "Back")
+        self.home_choosing_to_view_recipe_frame_backbutt.grid(row = 3, column = 0,
+                                                              sticky = "NESW",
+                                                              padx = 10, 
+                                                              pady = 10)
                                             
         
         return self.home_choosing_to_view_recipe_frame
