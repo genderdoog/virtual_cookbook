@@ -8,6 +8,7 @@ Version 1: Output to python shell
 Version 2: Output to GUI - only specified recipe
 Version 3: User can pick what recipe they want
 Version 4: Resizes to window size
+Version 5: No longer crashes when there are no recipes present
 """
 
 import json
@@ -22,7 +23,7 @@ class Program:
         
         # Initialise window settings
         self.root = Tk()
-        self.root.title("Component 1 - Version 4")
+        self.root.title("Component 1 - Version 5")
         
         # Make the root window expandable
         self.root.grid_rowconfigure(0, weight=1)
@@ -51,7 +52,7 @@ class Program:
         
         # Creating windows in our GUI
         self.windows["HomeChoosingToViewRecipeFrame"] = self.create_HomeChoosingToViewRecipeFrame()
-        self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("chocolate_chip_cookie") # We add an example recipe into the function
+        self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("chocolate_chip_cookie") 
         
         # Show choosing recipe frame first when program is started
         self.show_frame("HomeChoosingToViewRecipeFrame")
