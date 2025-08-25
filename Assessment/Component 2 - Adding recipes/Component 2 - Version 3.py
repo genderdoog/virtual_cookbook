@@ -6,7 +6,7 @@ Created on: 30/07/2025
 
 Version 1: Output to python shell
 Version 2: minimum viable product GUI
-Version 3: validation checking and themes
+Version 3: validation checking
 """
 
 import json
@@ -35,24 +35,6 @@ class Program:
         # Make the main container expandable
         self.main_container.grid_rowconfigure(0, weight=1)
         self.main_container.grid_columnconfigure(0, weight=1)        
-        
-        # Themes
-        # This will open up the themes json file
-        with open("../data/theme_config.json") as f:
-            theme_config_json = json.load(f)              
-        
-        chosen_theme_name = theme_config_json["chosen_theme"] # Find the name of the theme that the user has last selected
-        
-        chosen_theme_details = theme_config_json[chosen_theme_name] # Find the details of that theme.
-        
-        # Set the theme related variables to that theme
-        self.bg = chosen_theme_details["bg"]
-        self.heading_bg = chosen_theme_details["heading_bg"]
-        self.heading_txt = chosen_theme_details["heading_txt"]
-        self.subheading_bg = chosen_theme_details["subheading_bg"]
-        self.subheading_txt = chosen_theme_details["subheading_txt"]
-        self.button_bg = chosen_theme_details["button_bg"]
-        self.button_txt = chosen_theme_details["button_txt"]        
         
         # Storing information
         self.new_recipe_info = {} # Creates the main dictionary which we will then dump to a json file
@@ -112,7 +94,7 @@ class Program:
         self.windows["SaveRecipeToJsonFrame"] = self.create_SaveRecipeToJsonFrame()
         
         # Show home frame first when program starts
-        self.show_frame("ShowCurrentInstructionsFrame")   
+        self.show_frame("AskRecipeTimerFrame")   
         
     def show_frame(self, name):
         '''Show a frame, then bring it to the top'''
@@ -145,47 +127,29 @@ class Program:
                 self.display_user_input_status.set("Information successfully saved")
                 print(self.new_recipe_info)                
         
-        else: # For all other frames other than asking for the recipe name, prep time etc
-            if data_type == "timer_set_to": # We need special handing for when user is adding an integer value for inputting timer set to how many minute
-                try:
-                    info = int(info)
-                    
-                    if info > 0: # If input is valid
-                        self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
-                        self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
-                        self.display_user_input_status.set("Information successfully saved")
-                        print(self.new_recipe_info)  
-                    else:
-                        self.able_to_proceed.set(0) # Ensures that user will not able to proceed
-                        self.display_user_input_status.set("ERROR: Enter required information")
-                        
-                except ValueError:
-                    self.able_to_proceed.set(0) # Ensures that user will not able to proceed
-                    self.display_user_input_status.set("ERROR: Enter whole numbers only in input.")                    
-                        
-            else: # For text only inputs, such as asking for recipe name
-                try: 
-                    print(info)
-                    if info.strip() == "": # If information given is blank from text box, or a blank list of instructions
-                        self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
-                        self.display_user_input_status.set("ERROR: Enter required information")
-                    
-                    else:
-                        self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
-                        self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
-                        self.display_user_input_status.set("Information successfully saved")
-                        print(self.new_recipe_info)
-                        
-                except AttributeError: # When saving ingredients list, we need to use this code
-                    if info == [] or info == {}: # If the user has not added any ingredients or instructions, we cannot let them proceed
-                        self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
-                        self.display_user_input_status.set("ERROR: No ingredients added, press the 'Add' button to add an ingredient.")
+        else: # For all other frames other than asking for the recipe name
+            try: # For text only inputs, such as asking for recipe name
+                print(info)
+                if info.strip() == "": # If information given is blank from text box, or a blank list of instructions
+                    self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
+                    self.display_user_input_status.set("ERROR: Enter required information")
                 
-                    else:
-                        self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
-                        self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
-                        self.display_user_input_status.set("Information successfully saved")
-                        print(self.new_recipe_info)                
+                else:
+                    self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
+                    self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
+                    self.display_user_input_status.set("Information successfully saved")
+                    print(self.new_recipe_info)
+                    
+            except AttributeError: # When saving ingredients list, we need to use this code
+                if info == [] or info == {}: # If the user has not added any ingredients or instructions, we cannot let them proceed
+                    self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
+                    self.display_user_input_status.set("ERROR: No ingredients added, press the 'Add' button to add an ingredient.")
+            
+                else:
+                    self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
+                    self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
+                    self.display_user_input_status.set("Information successfully saved")
+                    print(self.new_recipe_info)                
         
     def save_temp_ingredient_info(self, data_type, info):
         '''This determines what the save button does while the user is adding ingredients'''
@@ -341,17 +305,15 @@ class Program:
     def save_instruction_info(self, instruction):
         '''When the user presses the save button after entering into the 
         instructions, this is what will be run''' 
-        
-        if instruction.strip() == "": # Validation checking, blank inputs are invalid
-            self.display_user_input_status.set("ERROR: Enter required information")
-            self.able_to_proceed.set(0) # Ensure that the user cannot continue
+        #if instruction.strip() == "":
+            #self.display_user_input_status.set("") 
+            #self.able_to_proceed.set(0)          
             
-        else:
-            self.new_instruction_info[f"step{self.current_step.get()}"] = instruction # Add the instruction, which will save the step to new_instruction info
-            print(self.new_instruction_info)
-            self.display_instructions.set(str(self.new_instruction_info)) # Update the text variable so that user knows what steps they have added so far
-            self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
-            self.able_to_proceed.set(1) # Ensure that the user can continue
+        
+        self.new_instruction_info[f"step{self.current_step.get()}"] = instruction # Add the instruction, which will save the step to new_instruction info
+        self.current_step.set(self.current_step.get() + 1) # Increment the step by one, so that if user adds another instruction it will adjust accordingly
+        print(self.new_instruction_info)
+        self.display_instructions.set(str(self.new_instruction_info)) # Update the text variable so that user knows what steps they have added so far
 
             
     def upload_file(self):
@@ -410,22 +372,12 @@ class Program:
             self.display_user_input_status.set("----") # Reset the status box
             self.show_frame(frame_name) # Show the next frame
              
-    def go_to_home_instruction_frame(self):
-        '''After the user has pressed save when adding an instruction, we need 
-        to increment self.current_step() by one, then show the home page frame
-        for adding instructions'''
-        
-        if self.able_to_proceed.get() == 0: # If user has entered invalid input
-            self.display_user_input_status.set("ERROR: Enter required information then press the save button.") # Change status box to inform user
-        else:
-            self.current_step.set(self.current_step.get() + 1) # Increment the step counter by one
-            self.display_user_input_status.set("----") # Reset the status box
-            self.show_frame("ShowCurrentInstructionsFrame") # Go to next frame
+            
     
     def create_AskRecipeNameFrame(self):
         '''Asks for recipe name window'''
         # Sets up window
-        self.ask_recipe_name_frame = Frame(self.main_container, bg = self.bg)
+        self.ask_recipe_name_frame = Frame(self.main_container)
         self.ask_recipe_name_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -441,17 +393,13 @@ class Program:
         
         # Creating and packing heading widget
         self.ask_recipe_name_frame_heading = Label(self.ask_recipe_name_frame,
-                                                   text = "Enter name of recipe:",
-                                                   bg = self.heading_bg,
-                                                   fg = self.heading_txt)
+                                                   text = "Enter name of recipe:")
         self.ask_recipe_name_frame_heading.grid(row = 0, column = 0, sticky = "NESW",
                                                 columnspan = 3, padx = 10, 
                                                 pady = 10)
         
         # Creating and packing text box
-        self.ask_recipe_name_frame_textbox = Entry(self.ask_recipe_name_frame,
-                                                   bg = self.subheading_bg,
-                                                   fg = self.subheading_txt)
+        self.ask_recipe_name_frame_textbox = Entry(self.ask_recipe_name_frame)
         self.ask_recipe_name_frame_textbox.grid(row = 1, column = 0,
                                                 columnspan = 3,
                                                 sticky = "NESW",
@@ -460,9 +408,7 @@ class Program:
         # Create next button
         self.ask_recipe_name_frame_nextbutt = Button(self.ask_recipe_name_frame,
                                                      text = "Next",
-                                                     command=lambda: self.allow_user_to_proceed("AskRecipeAuthorSourceFrame"),
-                                                     bg = self.button_bg,
-                                                     fg = self.button_txt)
+                                                     command=lambda: self.allow_user_to_proceed("AskRecipeAuthorSourceFrame"))
         self.ask_recipe_name_frame_nextbutt.grid(row = 2, column = 0, 
                                                 sticky = "NESW",
                                                 padx = 10, pady = 10)
@@ -470,27 +416,21 @@ class Program:
         # Create save button to store value in self.new_recipe_info
         self.ask_recipe_name_frame_savebutt = Button(self.ask_recipe_name_frame,
                                                      text = "Save",
-                                                     command=lambda: self.save_information("name", self.ask_recipe_name_frame_textbox.get()),
-                                                     bg = self.button_bg,
-                                                     fg = self.button_txt) 
+                                                     command=lambda: self.save_information("name", self.ask_recipe_name_frame_textbox.get())) 
         self.ask_recipe_name_frame_savebutt.grid(row = 2, column = 1, 
                                                  sticky = "NESW",
                                                  padx = 10, pady = 10)
         
         # Create and pack back button to return to main menu
         self.ask_recipe_name_frame_backbutt = Button(self.ask_recipe_name_frame,
-                                                     text = "Back to main menu",
-                                                     bg = self.button_bg,
-                                                     fg = self.button_txt)
+                                                     text = "Back to main menu")
         self.ask_recipe_name_frame_backbutt.grid(row = 2, column = 2,
                                                  sticky = "NESW", padx = 10,
                                                  pady = 10)
         
         # Create and pack status box at bottom
         self.ask_recipe_frame_statusbox = Label(self.ask_recipe_name_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.ask_recipe_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 3)
         
@@ -500,8 +440,7 @@ class Program:
     def create_AskRecipeAuthorSourceFrame(self):
         '''Window which asks user for author/source'''
         # Set up window
-        self.ask_recipe_author_source_frame = Frame(self.main_container,
-                                                    bg = self.bg)
+        self.ask_recipe_author_source_frame = Frame(self.main_container)
         self.ask_recipe_author_source_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -517,17 +456,13 @@ class Program:
         
         # Create and pack heading widget
         self.ask_recipe_author_source_frame_heading = Label(self.ask_recipe_author_source_frame,
-                                                            text = "Enter author's name or source of recipe:",
-                                                            bg = self.heading_bg,
-                                                            fg = self.heading_txt)
+                                                            text = "Enter author's name or source of recipe:")
         self.ask_recipe_author_source_frame_heading.grid(row = 0, column = 0,
                                                          sticky = "NESW",
                                                          columnspan = 2,
                                                          padx = 10, pady = 10)
         # Create and pack text box
-        self.ask_recipe_author_source_frame_textbox = Entry(self.ask_recipe_author_source_frame,
-                                                            bg = self.subheading_bg,
-                                                            fg = self.subheading_txt)
+        self.ask_recipe_author_source_frame_textbox = Entry(self.ask_recipe_author_source_frame)
         self.ask_recipe_author_source_frame_textbox.grid(row = 1, column = 0,
                                                          sticky = "NESW", 
                                                          columnspan = 2,
@@ -536,9 +471,7 @@ class Program:
         # Create next button and pack next button
         self.ask_recipe_author_source_frame_nextbutt = Button(self.ask_recipe_author_source_frame,
                                                               text = "Next",
-                                                              command=lambda: self.allow_user_to_proceed("AskRecipePrepTimeFrame"),
-                                                              bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              command=lambda: self.allow_user_to_proceed("AskRecipePrepTimeFrame"))
         self.ask_recipe_author_source_frame_nextbutt.grid(row = 2, column = 0,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -546,18 +479,14 @@ class Program:
         # Create and pack save button
         self.ask_recipe_author_source_frame_savebutt = Button(self.ask_recipe_author_source_frame,
                                                               text = "Save",
-                                                              command=lambda: self.save_information("author/source", self.ask_recipe_author_source_frame_textbox.get()),
-                                                              bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              command=lambda: self.save_information("author/source", self.ask_recipe_author_source_frame_textbox.get()))
         self.ask_recipe_author_source_frame_savebutt.grid(row = 2, column = 1,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.ask_recipe_author_source_frame_statusbox = Label(self.ask_recipe_author_source_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.ask_recipe_author_source_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)        
         
@@ -566,8 +495,7 @@ class Program:
     
     def create_AskRecipePrepTimeFrame(self):
         '''Creates window to ask for prep time'''
-        self.ask_recipe_prep_time_frame = Frame(self.main_container, bg = 
-                                                self.bg)
+        self.ask_recipe_prep_time_frame = Frame(self.main_container)
         self.ask_recipe_prep_time_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -583,18 +511,14 @@ class Program:
         
         # Create and pack heading widget
         self.ask_recipe_prep_time_frame_heading = Label(self.ask_recipe_prep_time_frame,
-                                                        text = "Enter prep time:",
-                                                        bg = self.heading_bg,
-                                                        fg = self.heading_txt)
+                                                        text = "Enter prep time:")
         self.ask_recipe_prep_time_frame_heading.grid(row = 0, column = 0,
                                                      sticky = "NESW", 
                                                      columnspan = 2,
                                                      padx = 10, pady = 10)
         
         # Create and pack text box widget
-        self.ask_recipe_prep_time_frame_textbox = Entry(self.ask_recipe_prep_time_frame,
-                                                        bg = self.subheading_bg,
-                                                        fg = self.subheading_txt)
+        self.ask_recipe_prep_time_frame_textbox = Entry(self.ask_recipe_prep_time_frame)
         self.ask_recipe_prep_time_frame_textbox.grid(row = 1, column = 0,
                                                      sticky = "NESW",
                                                      columnspan = 2,
@@ -603,9 +527,7 @@ class Program:
         # Create and pack next button
         self.ask_recipe_prep_time_frame_nextbutt = Button(self.ask_recipe_prep_time_frame,
                                                           text = "Next",
-                                                          command=lambda: self.allow_user_to_proceed("AskRecipeTotalTimeFrame"),
-                                                          bg = self.button_bg,
-                                                          fg = self.button_txt)
+                                                          command=lambda: self.allow_user_to_proceed("AskRecipeTotalTimeFrame"))
         self.ask_recipe_prep_time_frame_nextbutt.grid(row = 2, column = 0,
                                                       sticky = "NESW",
                                                       padx = 10, pady = 10)
@@ -613,18 +535,14 @@ class Program:
         # Create and pack save button
         self.ask_recipe_prep_time_frame_savebutt = Button(self.ask_recipe_prep_time_frame,
                                                           text = "Save",
-                                                          command=lambda: self.save_information("prep_time", self.ask_recipe_prep_time_frame_textbox.get()),
-                                                          bg = self.button_bg,
-                                                          fg = self.button_txt)
+                                                          command=lambda: self.save_information("prep_time", self.ask_recipe_prep_time_frame_textbox.get()))
         self.ask_recipe_prep_time_frame_savebutt.grid(row = 2, column = 1,
                                                       sticky = "NESW",
                                                       padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.ask_recipe_prep_time_frame_statusbox = Label(self.ask_recipe_prep_time_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.ask_recipe_prep_time_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)        
         
@@ -633,8 +551,7 @@ class Program:
     
     def create_AskRecipeTotalTimeFrame(self):
         '''Creates window which asks user for total time to make recipe'''
-        self.ask_recipe_total_time_frame = Frame(self.main_container,
-                                                 bg = self.bg)
+        self.ask_recipe_total_time_frame = Frame(self.main_container)
         self.ask_recipe_total_time_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -650,18 +567,14 @@ class Program:
         
         # Create and pack heading widget
         self.ask_recipe_total_time_frame_heading = Label(self.ask_recipe_total_time_frame,
-                                                         text = "Enter total cooking time:",
-                                                         bg = self.heading_bg,
-                                                         fg = self.heading_txt)
+                                                         text = "Enter total cooking time:")
         self.ask_recipe_total_time_frame_heading.grid(row = 0, column = 0,
                                                       sticky = "NESW", 
                                                       columnspan = 2,
                                                       padx = 10, pady = 10)
         
         # Create and pack entry box so that user can enter how long in total it will take to make that recipe
-        self.ask_recipe_total_time_frame_textbox = Entry(self.ask_recipe_total_time_frame,
-                                                         bg = self.subheading_bg,
-                                                         fg = self.subheading_txt)
+        self.ask_recipe_total_time_frame_textbox = Entry(self.ask_recipe_total_time_frame)
         self.ask_recipe_total_time_frame_textbox.grid(row = 1, column = 0, 
                                                       sticky = "NESW",
                                                       columnspan = 2,
@@ -670,9 +583,7 @@ class Program:
         # Create and pack next button, to move onto asking how many servings is this recipe for
         self.ask_recipe_total_time_frame_nextbutt = Button(self.ask_recipe_total_time_frame,
                                                            text = "Next",
-                                                           command=lambda: self.allow_user_to_proceed("AskRecipeHowManyServesFrame"),
-                                                           bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           command=lambda: self.allow_user_to_proceed("AskRecipeHowManyServesFrame"))
         self.ask_recipe_total_time_frame_nextbutt.grid(row = 2, column = 0,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
@@ -680,18 +591,14 @@ class Program:
         # Create and pack save button, to save total time required to make this recipe
         self.ask_recipe_total_time_frame_savebutt = Button(self.ask_recipe_total_time_frame,
                                                            text = "Save",
-                                                           command=lambda: self.save_information("total_time", self.ask_recipe_total_time_frame_textbox.get()),
-                                                           bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           command=lambda: self.save_information("total_time", self.ask_recipe_total_time_frame_textbox.get()))
         self.ask_recipe_total_time_frame_savebutt.grid(row = 2, column = 1,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.ask_recipe_total_time_frame_statusbox = Label(self.ask_recipe_total_time_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.ask_recipe_total_time_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)
         
@@ -699,8 +606,7 @@ class Program:
     
     def create_AskRecipeHowManyServesFrame(self):
         '''Creates window which allows user to input how many people this recipe serves'''
-        self.ask_recipe_how_many_serves_frame = Frame(self.main_container,
-                                                      bg = self.bg)
+        self.ask_recipe_how_many_serves_frame = Frame(self.main_container)
         self.ask_recipe_how_many_serves_frame.grid(row = 0, column = 0,
                                                    sticky = "NESW")
         
@@ -717,18 +623,14 @@ class Program:
             
         # Creates and packs heading widget
         self.ask_recipe_how_many_serves_frame_heading = Label(self.ask_recipe_how_many_serves_frame,
-                                                              text = "How many people does this recipe serve?",
-                                                              bg = self.heading_bg,
-                                                              fg = self.heading_txt)
+                                                              text = "How many people does this recipe serve?")
         self.ask_recipe_how_many_serves_frame_heading.grid(row = 0, column = 0,
                                                            sticky = "NESW",
                                                            columnspan = 2,
                                                            padx = 10, pady = 10)
         
         # Creates and packs entry box for user to input number of servings
-        self.ask_recipe_how_many_serves_frame_textbox = Entry(self.ask_recipe_how_many_serves_frame,
-                                                              bg = self.subheading_bg,
-                                                              fg = self.subheading_txt)
+        self.ask_recipe_how_many_serves_frame_textbox = Entry(self.ask_recipe_how_many_serves_frame)
         self.ask_recipe_how_many_serves_frame_textbox.grid(row = 1, column = 0,
                                                            sticky = "NESW",
                                                            columnspan = 2,
@@ -737,9 +639,7 @@ class Program:
         # Creates and packs next button, which will move onto asking for ingredients
         self.ask_recipe_how_many_serves_frame_nextbutt = Button(self.ask_recipe_how_many_serves_frame,
                                                                 text = "Next",
-                                                                command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"),
-                                                                bg = self.button_bg,
-                                                                fg = self.button_txt)
+                                                                command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"))
         self.ask_recipe_how_many_serves_frame_nextbutt.grid(row = 2, column = 0,
                                                             sticky = "NESW",
                                                             padx = 10, pady = 10)
@@ -747,18 +647,14 @@ class Program:
         # Creates and packs save button, to save current information into self.new_recipe_info
         self.ask_recipe_how_many_serves_frame_savebutt = Button(self.ask_recipe_how_many_serves_frame,
                                                                 text = "Save",
-                                                                command=lambda: self.save_information("serves", self.ask_recipe_how_many_serves_frame_textbox.get()),
-                                                                bg = self.button_bg,
-                                                                fg = self.button_txt)
+                                                                command=lambda: self.save_information("serves", self.ask_recipe_how_many_serves_frame_textbox.get()))
         self.ask_recipe_how_many_serves_frame_savebutt.grid(row = 2, column = 1,
                                                             sticky = "NESW",
                                                             padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.ask_recipe_how_many_serves_frame_statusbox = Label(self.ask_recipe_how_many_serves_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.ask_recipe_how_many_serves_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)        
         
@@ -768,8 +664,7 @@ class Program:
     def create_ShowCurrentIngredientsFrame(self):
         '''Shows current ingredients added to new recipe'''
         # Setting up frame
-        self.show_current_ingredients_frame = Frame(self.main_container,
-                                                    bg = self.bg)
+        self.show_current_ingredients_frame = Frame(self.main_container)
         self.show_current_ingredients_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -786,8 +681,7 @@ class Program:
         # Create and pack heading widget
         self.show_current_ingredients_frame_heading = Label(self.show_current_ingredients_frame,
                                                             text = "Current ingredients:",
-                                                            bg = self.heading_bg,
-                                                            fg = self.heading_txt)
+                                                            wraplength = 0)
         self.show_current_ingredients_frame_heading.grid(row = 0, column = 0,
                                                          sticky = "NESW",
                                                          columnspan = 3,
@@ -795,9 +689,7 @@ class Program:
         
         # Create and pack "current list of ingredients"
         self.show_current_ingredients_frame_list = Label(self.show_current_ingredients_frame,
-                                                         textvariable = self.display_ingredients,
-                                                         bg = self.subheading_bg,
-                                                         fg = self.subheading_txt)
+                                                         textvariable = self.display_ingredients)
         self.show_current_ingredients_frame_list.grid(row = 1, column = 0,
                                                       sticky = "NESW",
                                                       columnspan = 3,
@@ -806,38 +698,30 @@ class Program:
         # Create and pack "add ingredients" button
         self.show_current_ingredients_frame_addbutt = Button(self.show_current_ingredients_frame,
                                                              text = "Add",
-                                                             command=lambda: self.show_frame("AddIngredientQuantityTypeFrame"),
-                                                             bg = self.button_bg,
-                                                             fg = self.button_txt)
+                                                             command=lambda: self.show_frame("AddIngredientQuantityTypeFrame"))
         self.show_current_ingredients_frame_addbutt.grid(row = 2, column = 0,
                                                          sticky = "NESW",
                                                          padx = 10, pady = 10)
         
-        # Create and pack "next" button
-        self.show_current_ingredients_frame_nextbutt = Button(self.show_current_ingredients_frame,
-                                                              text = "Next",
-                                                              command=lambda: self.allow_user_to_proceed("ShowCurrentInstructionsFrame"),
-                                                              bg = self.button_bg,
-                                                              fg = self.button_txt)
-        self.show_current_ingredients_frame_nextbutt.grid(row = 2, column = 1,
+        # Crreat and pack save button, which will add everything self.ingredient_info into self.new_recipe_info
+        self.show_current_ingredients_frame_savebutt = Button(self.show_current_ingredients_frame,
+                                                              text = "Save",
+                                                              command=lambda: self.save_information("ingredients", self.new_ingredient_info))
+        self.show_current_ingredients_frame_savebutt.grid(row = 2, column = 2,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
         
-        # Create and pack save button, which will add everything self.ingredient_info into self.new_recipe_info
-        self.show_current_ingredients_frame_savebutt = Button(self.show_current_ingredients_frame,
-                                                              text = "Save",
-                                                              command=lambda: self.save_information("ingredients", self.new_ingredient_info),
-                                                              bg = self.button_bg,
-                                                              fg = self.button_txt)
-        self.show_current_ingredients_frame_savebutt.grid(row = 2, column = 2,
+        # Create and pack "next" button
+        self.show_current_ingredients_frame_nextbutt = Button(self.show_current_ingredients_frame,
+                                                              text = "Next",
+                                                              command=lambda: self.allow_user_to_proceed("ShowCurrentInstructionsFrame"))
+        self.show_current_ingredients_frame_nextbutt.grid(row = 2, column = 1,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.show_current_ingredients_frame_statusbox = Label(self.show_current_ingredients_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.show_current_ingredients_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 3)      
         
@@ -846,8 +730,7 @@ class Program:
         
     def create_AddIngredientQuantityTypeFrame(self):
         '''Asks user for ingredient quantity type'''
-        self.add_ingredient_quantity_type_frame = Frame(self.main_container,
-                                                        bg = self.bg)
+        self.add_ingredient_quantity_type_frame = Frame(self.main_container)
         self.add_ingredient_quantity_type_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -863,9 +746,7 @@ class Program:
             
         # Create heading and pack heading
         self.add_ingredient_quantity_type_frame_heading = Label(self.add_ingredient_quantity_type_frame,
-                                                                text = "Select quantity type:",
-                                                                bg = self.heading_bg,
-                                                                fg = self.heading_txt)
+                                                                text = "Select quantity type:")
         self.add_ingredient_quantity_type_frame_heading.grid(row = 0, column = 0,
                                                              sticky = "NESW",
                                                              columnspan = 2,
@@ -892,9 +773,7 @@ class Program:
         # Create and pack next button, to move onto asking the ingredient name or generic text if the user has selected that option
         self.add_ingredient_quantity_type_frame_nextbutt = Button(self.add_ingredient_quantity_type_frame,
                                                                   text = "Next",
-                                                                  command=self.create_generic_text_or_other_frame, # Special case, as user might want to add generic text
-                                                                  bg = self.button_bg,
-                                                                  fg = self.button_txt)
+                                                                  command=self.create_generic_text_or_other_frame)
         self.add_ingredient_quantity_type_frame_nextbutt.grid(row = 2, column = 0,
                                                               sticky = "NESW",
                                                               padx = 10,
@@ -903,9 +782,7 @@ class Program:
         # Create and pack save button, to save information to self.temp_ingredient_info
         self.add_ingredient_quantity_type_frame_savebutt = Button(self.add_ingredient_quantity_type_frame,
                                                                   text = "Save",
-                                                                  command=lambda: self.save_temp_ingredient_info("quantity_type", self.add_ingredient_quantity_type_frame_combobox.get()),
-                                                                  bg = self.button_bg,
-                                                                  fg = self.button_txt) 
+                                                                  command=lambda: self.save_temp_ingredient_info("quantity_type", self.add_ingredient_quantity_type_frame_combobox.get())) 
         self.add_ingredient_quantity_type_frame_savebutt.grid(row = 2, column = 1,
                                                              sticky = "NESW",
                                                              padx = 10,
@@ -915,7 +792,7 @@ class Program:
     
     def create_AddIngredientNameFrame(self):
         '''Asks user for ingredient name when adding new ingredients'''
-        self.add_ingredient_name_frame = Frame(self.main_container, bg = self.bg)
+        self.add_ingredient_name_frame = Frame(self.main_container)
         self.add_ingredient_name_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -931,18 +808,14 @@ class Program:
             
         # Create and pack heading
         self.add_ingredient_name_frame_heading = Label(self.add_ingredient_name_frame,
-                                                       text = "Enter name of ingredient:",
-                                                       bg = self.heading_bg,
-                                                       fg = self.heading_txt)
+                                                       text = "Enter name of ingredient:")
         self.add_ingredient_name_frame_heading.grid(row = 0, column = 0, 
                                                     sticky = "NESW",
                                                     columnspan = 2,
                                                     padx = 10, pady = 10)
         
         # Create and pack text box which stores name of ingredient
-        self.add_ingredient_name_frame_textbox = Entry(self.add_ingredient_name_frame,
-                                                       bg = self.subheading_bg,
-                                                       fg = self.subheading_txt)
+        self.add_ingredient_name_frame_textbox = Entry(self.add_ingredient_name_frame)
         self.add_ingredient_name_frame_textbox.grid(row = 1, column = 0,
                                                      sticky = "NESW",
                                                      columnspan = 2,
@@ -951,9 +824,7 @@ class Program:
         # Create and pack save button
         self.add_ingredient_name_frame_savebutt = Button(self.add_ingredient_name_frame,
                                                          text = "Save",
-                                                         command=lambda: self.save_temp_ingredient_info("quantity_name", self.add_ingredient_name_frame_textbox.get()),
-                                                         bg = self.button_bg,
-                                                         fg = self.button_txt) 
+                                                         command=lambda: self.save_temp_ingredient_info("quantity_name", self.add_ingredient_name_frame_textbox.get())) 
         self.add_ingredient_name_frame_savebutt.grid(row = 2, column = 1,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -961,18 +832,14 @@ class Program:
         # Create and pack next button
         self.add_ingredient_name_frame_nextbutt = Button(self.add_ingredient_name_frame,
                                                          text = "Next",
-                                                         command=lambda: self.allow_user_to_proceed("AddIngredientAmountFrame"),
-                                                         bg = self.button_bg,
-                                                         fg = self.button_txt)
+                                                         command=lambda: self.allow_user_to_proceed("AddIngredientAmountFrame"))
         self.add_ingredient_name_frame_nextbutt.grid(row = 2, column = 0,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.add_ingredient_name_frame_statusbox = Label(self.add_ingredient_name_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.add_ingredient_name_frame_statusbox.grid(row = 3, column = 0, 
                                                       sticky = "NESW", 
                                                       columnspan = 2)        
@@ -982,8 +849,7 @@ class Program:
     
     def create_AddIngredientAmountFrame(self):
         '''Asks user for the amount of that ingredient which they have chosen'''
-        self.add_ingredient_amount_frame = Frame(self.main_container, 
-                                                 bg = self.bg)
+        self.add_ingredient_amount_frame = Frame(self.main_container)
         self.add_ingredient_amount_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -1000,9 +866,7 @@ class Program:
         # Creates and packs heading
         self.add_ingredient_amount_frame_heading1 = Label(self.add_ingredient_amount_frame,
                                                          text = "Enter amount of this ingredient type:",
-                                                         wraplength = 150,
-                                                         bg = self.heading_bg,
-                                                         fg = self.heading_txt)
+                                                         wraplength = 150)
         self.add_ingredient_amount_frame_heading1.grid(row = 0, column = 0, 
                                                       sticky = "NESW", 
                                                       padx = 10,
@@ -1010,17 +874,13 @@ class Program:
         
         # Creates and displays the name of the ingredient, entered in a previous page
         self.add_ingredient_amount_frame_quantityname = Label(self.add_ingredient_amount_frame,
-                                                              textvariable = self.display_ingredient_name,
-                                                              bg = self.heading_bg,
-                                                              fg = self.heading_txt)
+                                                              textvariable = self.display_ingredient_name)
         self.add_ingredient_amount_frame_quantityname.grid(row = 0, column = 1,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
         
         # Creates and packs entrybox
-        self.add_ingredient_amount_frame_textbox = Entry(self.add_ingredient_amount_frame,
-                                                         bg = self.subheading_bg,
-                                                         fg = self.subheading_txt)
+        self.add_ingredient_amount_frame_textbox = Entry(self.add_ingredient_amount_frame)
         self.add_ingredient_amount_frame_textbox.grid(row = 1, column = 0, 
                                                       sticky = "NESW",
                                                       columnspan = 2, padx = 10,
@@ -1028,18 +888,14 @@ class Program:
         
         # Creates and packs heading for "in"
         self.add_ingredient_amount_frame_heading2 = Label(self.add_ingredient_amount_frame,
-                                                          text = "in:",
-                                                          bg = self.subheading_bg,
-                                                          fg = self.subheading_txt)
+                                                          text = "in:")
         self.add_ingredient_amount_frame_heading2.grid(row = 2, column = 0,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
         
         # Creates and displays quantity type of ingredient, entered on a previous page
         self.add_ingredient_amount_frame_quantitytype = Label(self.add_ingredient_amount_frame,
-                                                              textvariable = self.display_ingredient_type,
-                                                              bg = self.subheading_bg,
-                                                              fg = self.subheading_txt)
+                                                              textvariable = self.display_ingredient_type)
         self.add_ingredient_amount_frame_quantitytype.grid(row = 2, column = 1,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
@@ -1047,9 +903,7 @@ class Program:
         # Creates and packs next button
         self.add_ingredient_amount_frame_nextbutt = Button(self.add_ingredient_amount_frame,
                                                            text = "Next",
-                                                           command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"),
-                                                           bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"))
         self.add_ingredient_amount_frame_nextbutt.grid(row = 3, column = 0,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
@@ -1057,18 +911,14 @@ class Program:
         # Creates and packs save button, which will add the quantity amount to the temp ingredient dictionary
         self.add_ingredient_amount_frame_savebutt = Button(self.add_ingredient_amount_frame,
                                                            text = "Save",
-                                                           command=lambda: self.save_temp_ingredient_info("quantity_amount", self.add_ingredient_amount_frame_textbox.get()),
-                                                           bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           command=lambda: self.save_temp_ingredient_info("quantity_amount", self.add_ingredient_amount_frame_textbox.get()))
         self.add_ingredient_amount_frame_savebutt.grid(row = 3, column = 1,
                                                       sticky = "NESW",
                                                       padx = 10, pady = 10)
         
         # Create and pack status box at bottom
         self.add_ingredient_amount_frame_statusbox = Label(self.add_ingredient_amount_frame,
-                                             textvariable = self.display_user_input_status,
-                                             bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             textvariable = self.display_user_input_status)
         self.add_ingredient_amount_frame_statusbox.grid(row = 4, column = 0, 
                                                       sticky = "NESW", 
                                                       columnspan = 2)        
@@ -1077,8 +927,7 @@ class Program:
     
     def create_AddIngredientGenericTextFrame(self):
         '''If user chooses quantity type = "generic text", they will be put on this frame'''
-        self.add_ingredient_generic_text_frame = Frame(self.main_container,
-                                                       bg = self.bg)
+        self.add_ingredient_generic_text_frame = Frame(self.main_container)
         self.add_ingredient_generic_text_frame.grid(row = 0, column = 0,
                                                     sticky = "NESW")
         
@@ -1213,10 +1062,10 @@ class Program:
         
         # Used in conjunction with sticky to make it fill the window
         self.add_new_instruction_frame.columnconfigure([0,1], minsize=150)
-        self.add_new_instruction_frame.rowconfigure([0,1,2,3], minsize=50)
+        self.add_new_instruction_frame.rowconfigure([0,1,2], minsize=50)
         
         # Make each grid in the frame expandable
-        for i in range(4): # 4 rows
+        for i in range(3): # 3 rows
             self.add_new_instruction_frame.grid_rowconfigure(i, weight=1)
         
         for j in range(2): # 2 columns
@@ -1240,7 +1089,7 @@ class Program:
         # Create and pack next button, which will return the user back to the show_current_ingredients_frame
         self.add_new_instruction_frame_nextbutt = Button(self.add_new_instruction_frame,
                                                          text = "Next",
-                                                         command=lambda: self.go_to_home_instruction_frame())
+                                                         command=lambda: self.show_frame("ShowCurrentInstructionsFrame"))
         self.add_new_instruction_frame_nextbutt.grid(row = 2, column = 0,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -1252,14 +1101,6 @@ class Program:
         self.add_new_instruction_frame_savebutt.grid(row = 2, column = 1,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
-        
-        # Create and pack status box at bottom
-        self.add_new_instruction_frame_statusbox = Label(self.add_new_instruction_frame,
-                                             textvariable = self.display_user_input_status)
-        self.add_new_instruction_frame_statusbox.grid(row = 3, column = 0, 
-                                                      sticky = "NESW", 
-                                                      columnspan = 2)        
-        
         
         return self.add_new_instruction_frame
         
@@ -1306,7 +1147,7 @@ class Program:
         # Create and pack save button
         self.ask_recipe_timer_frame_savebutt = Button(self.ask_recipe_timer_frame,
                                                       text = "Save",
-                                                      command=lambda: self.save_information("timer_set_to", self.ask_recipe_timer_frame_textbox.get())) # Set input as integer
+                                                      command=lambda: self.save_information("timer_set_to", int(self.ask_recipe_timer_frame_textbox.get()))) # Set input as integer
         self.ask_recipe_timer_frame_savebutt.grid(row = 2, column = 1,
                                                   sticky = "NESW",
                                                   padx = 10, pady = 10)
