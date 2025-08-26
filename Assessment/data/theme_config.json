@@ -1,12 +1,12 @@
 {
     "chosen_theme": "Light theme",
     "Light theme": {
-        "bg": "#ffffff",
-        "heading_bg": "#ff0000",
-        "heading_txt": "#ffffff",
-        "subheading_bg": "#007319",
-        "subheading_txt": "#ffffff",
-        "button_bg": "#f0f0f0",
+        "bg": "#e8e8e8",
+        "heading_bg": "#a3a3a3",
+        "heading_txt": "#000000",
+        "subheading_bg": "#ffc9c9",
+        "subheading_txt": "#000000",
+        "button_bg": "#c2c2c2",
         "button_txt": "#000000"
     },
     "Dark theme": {

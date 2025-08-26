@@ -8,7 +8,7 @@ Version 1: Output to python shell
 Version 2: Output to GUI - only specified recipe
 Version 3: User can pick what recipe they want
 Version 4: Resizes to window size
-Version 5: No longer crashes when there are no recipes present
+Version 5: No longer crashes when there are no recipes present, theming support
 """
 
 import json
@@ -17,6 +17,7 @@ from tkinter import *
 from tkinter import ttk
 
 class Program:
+    
     
     def __init__(self):
         '''Setup the GUI'''
@@ -37,6 +38,24 @@ class Program:
         self.main_container.grid_rowconfigure(0, weight=1)
         self.main_container.grid_columnconfigure(0, weight=1)        
         
+        # Themes
+        # This will open up the themes json file
+        with open("../data/theme_config.json") as f:
+            theme_config_json = json.load(f)              
+        
+        chosen_theme_name = theme_config_json["chosen_theme"] # Find the name of the theme that the user has last selected
+        
+        chosen_theme_details = theme_config_json[chosen_theme_name] # Find the details of that theme.
+        
+        # Set the theme related variables to that theme
+        self.bg = chosen_theme_details["bg"]
+        self.heading_bg = chosen_theme_details["heading_bg"]
+        self.heading_txt = chosen_theme_details["heading_txt"]
+        self.subheading_bg = chosen_theme_details["subheading_bg"]
+        self.subheading_txt = chosen_theme_details["subheading_txt"]
+        self.button_bg = chosen_theme_details["button_bg"]
+        self.button_txt = chosen_theme_details["button_txt"]  
+        
         # Initialise strings used to output recipe information
         self.recipe_name = StringVar()
         self.name_of_author_source = StringVar()
@@ -52,19 +71,22 @@ class Program:
         
         # Creating windows in our GUI
         self.windows["HomeChoosingToViewRecipeFrame"] = self.create_HomeChoosingToViewRecipeFrame()
-        self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("chocolate_chip_cookie") 
+        self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("do_not_delete") # To make program run, we first to parse in blank data 
         
         # Show choosing recipe frame first when program is started
         self.show_frame("HomeChoosingToViewRecipeFrame")
+        
         
     def show_frame(self, name):
         '''Show a frame, then bring it to the top'''
         frame = self.windows[name]
         frame.tkraise()
         
+        
     def run(self):
         '''Run program'''
         self.root.mainloop()
+        
         
     def run_timer(self):
         '''Runs the timer of a recipe'''
@@ -75,7 +97,8 @@ class Program:
     def create_HomeChoosingToViewRecipeFrame(self):
         '''Menu which allows user to pick and choose a recipe'''
         # Create choose recipe frame window
-        self.home_choosing_to_view_recipe_frame = Frame(self.main_container)
+        self.home_choosing_to_view_recipe_frame = Frame(self.main_container, 
+                                                        bg = self.bg)
         self.home_choosing_to_view_recipe_frame.grid(row = 0, column = 0, sticky = "NESW")
         
         # Used in conjunction with sticky to make it fill the window
@@ -108,7 +131,10 @@ class Program:
         # Create and pack button which will change the view recipes frame
         self.home_choosing_to_view_recipe_frame_viewbutt = Button(self.home_choosing_to_view_recipe_frame, 
                                             # We want to parse in the name of the folder which holds the image and json of the recipe, hence we use the value of the dictionary
-                                            text = "View recipe", command=lambda: self.create_ShowRecipeFrame(dict_recipes_combobox[self.home_choosing_to_view_recipe_frame_combobox.get()])) 
+                                            text = "View recipe", 
+                                            command=lambda: self.create_ShowRecipeFrame(dict_recipes_combobox[self.home_choosing_to_view_recipe_frame_combobox.get()]),
+                                            bg = self.button_bg,
+                                            fg = self.button_txt) 
         self.home_choosing_to_view_recipe_frame_viewbutt.grid(row = 1, column = 0, 
                                                               sticky="NESW",
                                                               padx = 10,
@@ -117,14 +143,18 @@ class Program:
         # Similar to the view recipe button, except it uses a random item from the list "list_recipes_folder_name"
         self.home_choosing_to_view_recipe_frame_ranbutt = Button(self.home_choosing_to_view_recipe_frame, 
                                             text = "Pick a random recipe for me!",
-                                            command=lambda: self.create_ShowRecipeFrame(random.choice(list_recipes_folder_name)))
+                                            command=lambda: self.create_ShowRecipeFrame(random.choice(list_recipes_folder_name)),
+                                            bg = self.button_bg,
+                                            fg = self.button_txt)
         self.home_choosing_to_view_recipe_frame_ranbutt.grid(row = 2, column = 0, 
                                                 sticky = "NESW", padx = 10,
                                                 pady = 10)
         
         # Create and pack back button
         self.home_choosing_to_view_recipe_frame_backbutt = Button(self.home_choosing_to_view_recipe_frame,
-                                                                  text = "Back")
+                                                                  text = "Back",
+                                                                  bg = self.button_bg,
+                                                                  fg = self.button_txt)
         self.home_choosing_to_view_recipe_frame_backbutt.grid(row = 3, column = 0,
                                                               sticky = "NESW",
                                                               padx = 10, 
@@ -133,19 +163,18 @@ class Program:
         
         return self.home_choosing_to_view_recipe_frame
     
+    
     def create_ShowRecipeFrame(self, recipe_folder_name):
         '''Creates recipe frame for chosen recipe'''
         # Creates frame for each widget in recipe frame
-        self.show_recipe_frame = Frame(self.main_container)
+        self.show_recipe_frame = Frame(self.main_container, bg = self.bg)
         self.show_recipe_frame.grid(row=0, column=0, sticky="NESW")
         
         # Used in conjunction with sticky to make it fill the window
         # First column, which displays 
         
-        self.show_recipe_frame.columnconfigure(0, minsize = 300)
-        self.show_recipe_frame.columnconfigure(1, minsize = 350)
-        self.show_recipe_frame.columnconfigure(2, minsize = 420) # Formatting for instructions        
-        self.show_recipe_frame.columnconfigure(3, minsize = 100)
+        self.show_recipe_frame.columnconfigure([0,1,2], minsize = 420) # Formatting for first 3 columns       
+        self.show_recipe_frame.columnconfigure(3, minsize = 100) # Formatting for last column (timer)
         
         self.show_recipe_frame.rowconfigure([0,1,2,3], minsize=50)
         
@@ -167,16 +196,33 @@ class Program:
         # Create then pack heading
         self.show_recipe_frame_heading = Label(self.show_recipe_frame, 
                                           textvariable=self.recipe_name, 
-                                          bg="orange", font = "Verdana 25 bold")
+                                          bg = self.heading_bg, 
+                                          fg = self.heading_txt,
+                                          font = "Verdana 20 bold")
         self.show_recipe_frame_heading.grid(row = 0, column = 0, 
                                             sticky = "NESW",
                                             padx = 10, pady = 10)
         
         # Show image
         self.show_recipe_frame_image = PhotoImage(file="../data/" + recipe_folder_name + "/image.png") # Create image widget
-        self.show_recipe_frame_image = self.show_recipe_frame_image.subsample(12) # Resizes image to be smaller
+        
+        # Scaling for image 
+        # Get width and height of image
+        image_height_pixels = self.show_recipe_frame_image.height()
+        image_width_pixels = self.show_recipe_frame_image.width()
+        
+        # Find the scale factor, based on the size of the image
+        result_height = image_height_pixels // 500
+        result_width = image_width_pixels // 600
+        
+        # Find the final scale factor, which we will use with .subsample()
+        scale_factor = result_height + result_width
+        
+        self.show_recipe_frame_image = self.show_recipe_frame_image.subsample(scale_factor) # Resizes image to be smaller
         # Create then show widget with the image inside
-        self.show_recipe_frame_image_frame = Label(self.show_recipe_frame, image = self.show_recipe_frame_image, bg="green")
+        self.show_recipe_frame_image_frame = Label(self.show_recipe_frame, image = self.show_recipe_frame_image, 
+                                                   bg = self.subheading_bg,
+                                                   fg = self.subheading_txt)
         self.show_recipe_frame_image_frame.grid(row = 1, column = 0, 
                                                 sticky = "NESW",
                                                 padx = 10, pady = 10)
@@ -195,8 +241,10 @@ class Program:
         
         # Show recipe info box
         self.show_recipe_frame_recipe_info_textbox = Label(self.show_recipe_frame, 
-                                         textvariable=self.recipe_info, bg="yellow",
-                                         font = "Verdana 12")
+                                         textvariable=self.recipe_info, 
+                                         bg = self.subheading_bg,
+                                         fg = self.subheading_txt,
+                                         font = "Verdana 10")
         self.show_recipe_frame_recipe_info_textbox.grid(row = 2, column = 0, 
                                                         sticky="NESW",
                                                         padx = 10, pady = 10)
@@ -214,7 +262,10 @@ class Program:
         # Show ingredients list
         self.show_recipe_frame_ingredients_textbox = Label(self.show_recipe_frame,
                                                textvariable=self.recipe_ingredients, 
-                                               bg="red", justify = LEFT)
+                                               bg = self.subheading_bg,
+                                               fg = self.subheading_txt, 
+                                               justify = LEFT,
+                                               wraplength = 400)
         self.show_recipe_frame_ingredients_textbox.grid(row = 0, column = 1, 
                                                         sticky="NESW",
                                                         rowspan = 3,
@@ -235,7 +286,9 @@ class Program:
         # Create then pack recipe instructions
         self.show_recipe_frame_instructions_textbox = Label(self.show_recipe_frame,
                                          textvariable=self.recipe_instructions,
-                                         wraplength=400, justify = LEFT)
+                                         wraplength=400, justify = LEFT,
+                                         bg = self.subheading_bg,
+                                         fg = self.subheading_txt)
         self.show_recipe_frame_instructions_textbox.grid(row = 0, column = 2, 
                                                          sticky="NESW",
                                                          rowspan = 3,
@@ -248,22 +301,25 @@ class Program:
 
         # Time textlabel
         self.show_recipe_frame_timer_label = Label(self.show_recipe_frame, textvariable=self.recipe_timer, 
-                                 bg="yellow")
+                                 bg = self.subheading_bg,
+                                 fg = self.subheading_txt)
         self.show_recipe_frame_timer_label .grid(row = 0, column = 3, 
                                                  sticky = "NESW", padx = 10,
                                                  pady = 10)
         
         # Timer start button
-        self.show_recipe_frame_timer_startbutt = Button(self.show_recipe_frame, 
-                                                        text = "Start timer",
-                                                        command=self.run_timer)
-        self.show_recipe_frame_timer_startbutt.grid(row = 1, column = 3, 
-                                                    sticky = "NESW",
-                                                    padx = 10, pady = 10)
+        #self.show_recipe_frame_timer_startbutt = Button(self.show_recipe_frame, 
+                                                        #text = "Start timer",
+                                                        #command=self.run_timer)
+        #self.show_recipe_frame_timer_startbutt.grid(row = 1, column = 3, 
+                                                    #sticky = "NESW",
+                                                    #padx = 10, pady = 10)
         
         # Back button (return to main menu)
         self.show_recipe_frame_backbutt = Button(self.show_recipe_frame, text = "Back",
-                                  command=lambda: self.show_frame("HomeChoosingToViewRecipeFrame"))
+                                  command=lambda: self.show_frame("HomeChoosingToViewRecipeFrame"),
+                                  bg = self.button_bg,
+                                  fg = self.button_txt)
         self.show_recipe_frame_backbutt.grid(row = 3, column = 0, columnspan = 4, 
                                              sticky="NESW", padx = 10, pady = 10)        
         

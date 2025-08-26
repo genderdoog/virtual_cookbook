@@ -151,7 +151,8 @@ class Program:
         self.home_page_frame_heading = Label(self.home_page_frame,
                                              text = "Virtual cookbook",
                                              bg = self.heading_bg,
-                                             fg = self.heading_txt)
+                                             fg = self.heading_txt,
+                                             font = "verdana 25 bold")
         self.home_page_frame_heading.grid(row = 0, column = 0,
                                           sticky = "NESW",
                                           columnspan = 2,
@@ -211,10 +212,10 @@ class Program:
         
         # Used in conjunction with sticky to make it fill the window
         self.settings_frame.columnconfigure([0,1], minsize=150)
-        self.settings_frame.rowconfigure([0,1,2,3,4,5], minsize=50)
+        self.settings_frame.rowconfigure([0,1,2,3], minsize=50)
         
         # Make each grid in the frame expandable
-        for i in range(3): # 3 rows
+        for i in range(4): # 4 rows
             self.settings_frame.grid_rowconfigure(i, weight=1)
         
         for j in range(2): # 2 columns
@@ -224,7 +225,8 @@ class Program:
         self.settings_frame_heading = Label(self.settings_frame,
                                             text = "Settings", 
                                             bg = self.heading_bg,
-                                            fg = self.heading_txt)
+                                            fg = self.heading_txt,
+                                            font = "verdana 25 bold")
         self.settings_frame_heading.grid(row = 0, column = 0, sticky = "NESW",
                                          columnspan = 2, padx = 10, pady = 10)
         
