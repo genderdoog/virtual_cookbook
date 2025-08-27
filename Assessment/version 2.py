@@ -92,7 +92,7 @@ class Program:
         self.display_user_input_status = StringVar()
         self.display_user_input_status.set("----")
         
-        # Creates varaible which helps us tell if user is able to proceed
+        # Creates variable which helps us tell if user is able to proceed
         self.able_to_proceed = IntVar()
         self.able_to_proceed.set(0) # If it is equal to 0, we don't allow the user to proceed        
         
@@ -137,12 +137,13 @@ class Program:
         self.windows["HomeEditSpecificRecipeFrame"] = self.create_HomeEditSpecificRecipeFrame()        
         
         # Show this frame when program first starts
-        self.show_frame("UploadImageFrame")
+        self.show_frame("HomePageFrame")
     
         
     def show_frame(self, name):
         '''Show a frame, then bring it to the top'''
         self.display_user_input_status.set("----") # Reset status box
+        self.able_to_proceed.set(0) # Don't allow the user to proceed until they press save
         frame = self.windows[name]
         frame.tkraise()
         
@@ -155,6 +156,7 @@ class Program:
     def quit_program(self):
         '''Closes program when user presses the quit button on the main menu'''
         self.root.destroy()        
+    
     
     def set_theme(self, theme_name):
         '''After the user selects an item from the combobox, the user presses the
@@ -217,6 +219,7 @@ class Program:
         self.recipe_timer.set(f"{self.timer_in_sec // 60}:{self.timer_in_sec % 60}")
         self.timer_in_sec -= 1    
         
+        
     def save_information(self, data_type, info):
         '''When the users presses the save button when adding recipes, it saves it to the main dictionary'''
         if data_type == "name": # This clears the values, when user adds recipes back to back.
@@ -224,15 +227,16 @@ class Program:
             self.temp_ingredient_info = [] # This will store information which will then be concatnated to then be added to new_ingredient_info
             self.new_ingredient_info = [] # This is the final list of all ingredients, which will be added to new_recipe_info            
             self.new_instruction_info = {} # This will be added to new_recipe_info as the value of the key "instructions"
-            self.current_step.set(1) # On reset, we set it to 1
-
+            self.display_instructions.set("") # Reset this text variable used when showing what instructions the user has added so far
+            self.display_ingredients.set("") # Reset this text variable used when showing what ingredients the user has added so far
+            self.current_step.set(1) # On startup, we set it back to 1
             
-            if info.strip() == "": # If information given is blank from text box
+            if info == "": # If information given is blank from text box
                 self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
                 self.display_user_input_status.set("ERROR: Enter required information")
             
             else:
-                info = info.strip() # Remove white space
+                info = info.strip().capitalize() # Remove white space and capitalize input
                 # We cannot allow the user to create recipes which have the same name, so the below code wil check that
                 info_directory_recipe_name = info.lower().replace(" ", "_") # find out the name which will be used in the directory
                 
@@ -249,10 +253,10 @@ class Program:
                 else: # If this name has not been seen before            
                     self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is i
                     self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
-                    self.display_user_input_status.set("Information successfully saved")            
+                    self.display_user_input_status.set("Information successfully saved")
         
-        else: # For all other frames other than asking for the recipe name, prep time etc
-            if data_type == "timer_set_to": # We need special handing for when user is adding an integer value for inputting timer set to how many minute
+        else: # For all other frames other than asking for the recipe name such as prep time etc
+            if data_type == "timer_set_to": # We need special handing for when user is adding an integer value for inputting timer set to how many minutes
                 try:
                     info = int(info)
                     
@@ -264,12 +268,13 @@ class Program:
                         self.able_to_proceed.set(0) # Ensures that user will not able to proceed
                         self.display_user_input_status.set("ERROR: Enter required information")
                         
-                except ValueError:
+                except ValueError: # If string is detected
                     self.able_to_proceed.set(0) # Ensures that user will not able to proceed
                     self.display_user_input_status.set("ERROR: Enter whole numbers only in input.")                    
                         
-            else: # For text only inputs, such as asking for recipe name
+            else: # For other inputs, such as asking for recipe name
                 try: 
+                    info = info.strip().capitalize() # Remove white space and capitalize input
                     if info.strip() == "": # If information given is blank from text box, or a blank list of instructions
                         self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
                         self.display_user_input_status.set("ERROR: Enter required information")
@@ -279,11 +284,15 @@ class Program:
                         self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
                         self.display_user_input_status.set("Information successfully saved")
                         
-                except AttributeError: # When saving ingredients list, we need to use this code
-                    if info == [] or info == {}: # If the user has not added any ingredients or instructions, we cannot let them proceed
+                except AttributeError: # When saving ingredients or instructions, we need to use this code
+                    if info == []: # If the user has not added any ingredients we cannot let them proceed
                         self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
-                        self.display_user_input_status.set("ERROR: No ingredients added, press the 'Add' button to add an ingredient.")
-                
+                        self.display_user_input_status.set("ERROR: No ingredients added, press the 'Add' button to add at least one ingredient.")
+                        
+                    elif info == {}: # When saving instrucions list, we need to use this code
+                        self.able_to_proceed.set(0) # Ensures that the user cannot continue with invalid information entered
+                        self.display_user_input_status.set("ERROR: No instructions added, press the 'Add' button to add at least one instruction.")                        
+                    
                     else:
                         self.new_recipe_info[data_type] = info # Stores data_type name and value e.g. {"name": "chocolate chip cookie"} where name is data_type and chocolate chip cookie is info
                         self.able_to_proceed.set(1) # Ensures that the user can continue on with adding information for the recipe
@@ -350,7 +359,8 @@ class Program:
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
                         self.display_ingredients.set(str(self.new_ingredient_info))
                         self.display_user_input_status.set("Information successfully saved")
-                        self.able_to_proceed.set(1) # Ensure that the user can continue                    
+                        self.able_to_proceed.set(1) # Ensure that the user can continue
+                        self.temp_ingredient_info = []
                     
                     else: # If user has already saved their ingredient amount
                         self.temp_ingredient_info.pop(-1) # Removes old quantity value
@@ -373,7 +383,8 @@ class Program:
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
                         self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
                         self.display_user_input_status.set("Information successfully saved")
-                        self.able_to_proceed.set(1) # Ensure that the user can continue                         
+                        self.able_to_proceed.set(1) # Ensure that the user can continue
+                        self.temp_ingredient_info = []
                         
                     else: # If user has already saved their ingredient amount
                         self.temp_ingredient_info.pop(-1) # Removes old quantity value
@@ -383,7 +394,8 @@ class Program:
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary (which will be dumped to json)
                         self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
                         self.display_user_input_status.set("Information successfully saved")
-                        self.able_to_proceed.set(1) # Ensure that the user can continue                        
+                        self.able_to_proceed.set(1) # Ensure that the user can continue
+                        self.temp_ingredient_info = []
                 
                 else:
                     self.display_user_input_status.set("ERROR: Enter whole numbers or fractional amounts (e.g. 3/4)")
@@ -397,7 +409,8 @@ class Program:
                 self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
                 self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
                 self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
-                self.able_to_proceed.set(1) # Allows user to proceed                
+                self.able_to_proceed.set(1) # Allows user to proceed
+                self.temp_ingredient_info = []
                 
             else:
                 self.temp_ingredient_info.pop(-1) # Removes old generic text
@@ -407,7 +420,8 @@ class Program:
                 self.new_ingredient_info.append(final_ingredient) # Add generic text to the new ingredient dictionary
                 self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
                 self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
-                self.able_to_proceed.set(1) # Allows user to proceed                
+                self.able_to_proceed.set(1) # Allows user to proceed
+                self.temp_ingredient_info = []
           
                     
     def create_generic_text_or_other_frame(self):
@@ -417,9 +431,9 @@ class Program:
         
         if self.temp_ingredient_info[0] == "generictext": # If user has picked generic text as their ingredient type, we send them to this frame
             self.create_AddIngredientGenericTextFrame()
-        
+            
         else: # For any other quantity type, we need send them to the add ingredient name frame
-            self.create_AddIngredientNameFrame()
+            self.create_AddIngredientNameFrame()    
         
         
     def save_instruction_info(self, instruction):
@@ -457,16 +471,15 @@ class Program:
                     self.able_to_proceed.set(0) # # Does not allow the user to proceed                
                 else: # Valid image uploaded
                     self.new_recipe_info["path_to_image"] = file_path # Stores it in new_recipe_info
-                    print(self.new_recipe_info)
                     self.display_user_input_status.set("Information successfully saved") # Informs user that process is correct
                     self.able_to_proceed.set(1) # Allows the user to proceed with saving recipe
             
             else: # Rare edge case, if no file extension is there
-                self.display_user_input_status.set("ERROR: Image file format must be .png") # Informs user to only input png files
+                self.display_user_input_status.set("ERROR: Unknown file type detected, upload a png image file.") # Informs user to only input png files
                 self.able_to_proceed.set(0) # Does not allow the user to proceed 
                 
         except: # For any other generic errors
-            self.display_user_input_status.set("ERROR: Image file format must be .png") # Informs user to only input png files
+            self.display_user_input_status.set("ERROR: Unknown file type detected, upload a png image file.") # Informs user to only input png files
             self.able_to_proceed.set(0) # Does not allow the user to proceed            
         
         
@@ -501,8 +514,48 @@ class Program:
         with open("./data/recipe_index.json", "w") as f:
             json.dump(current_json_index, f, indent = 4)
             
+        # Update comboboxes in other components, this is so that the user can see the new recipe
+        # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
+        with open("./data/recipe_index.json") as f:
+            dict_recipes_combobox = json.load(f)    
+            
+        self.list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Creates a list of the non-folder names of the recipes
+        self.list_recipes_folder_name = list(dict_recipes_combobox.values()) # Creates a list which is of the folder type names of each recipe (used for random recipe button)        
         
-        self.show_frame("HomePageFrame")
+        # Replace the combobox that is there to force a refresh of contents
+        self.home_edit_recipes_frame_combobox = ttk.Combobox(self.home_edit_recipes_frame,
+                                                             state = "readonly",
+                                                             values = self.list_recipes_combobox_name,
+                                                             font = "verdana 15")
+        self.home_edit_recipes_frame_combobox.grid(row = 1, column = 0,
+                                                   sticky = "NESW",
+                                                   padx = 10, pady = 10)
+        
+        # Create and pack combo box, for component 1
+        self.home_choosing_to_view_recipe_frame_combobox = ttk.Combobox(self.home_choosing_to_view_recipe_frame, 
+                                                   state = "readonly",
+                                                   values = self.list_recipes_combobox_name,
+                                                   font = "verdana 15")
+        self.home_choosing_to_view_recipe_frame_combobox.grid(row = 1, column = 0, 
+                                                    sticky = "NESW",
+                                                    padx = 10, pady = 10)
+        
+        # Refresh contents of view button
+        self.home_choosing_to_view_recipe_frame_viewbutt = Button(self.home_choosing_to_view_recipe_frame, 
+                                            # We want to parse in the name of the folder which holds the image and json of the recipe, hence we use the value of the dictionary
+                                            text = "View recipe", 
+                                            command=lambda: self.create_ShowRecipeFrame(dict_recipes_combobox[self.home_choosing_to_view_recipe_frame_combobox.get()]),
+                                            bg = self.button_bg,
+                                            fg = self.button_txt,
+                                            font = "verdana 15") 
+        self.home_choosing_to_view_recipe_frame_viewbutt.grid(row = 2, column = 0, 
+                                                              sticky="NESW",
+                                                              padx = 10,
+                                                              pady = 10)        
+        
+        self.clear_entry_widgets() # Clear entries from all inputs
+        
+        self.show_frame("HomePageFrame") # Put user back to homepage
     
     
     def allow_user_to_proceed(self, frame_name):
@@ -510,7 +563,7 @@ class Program:
         ensure that they have entered the required information before hand.'''
         
         if self.able_to_proceed.get() == 0: # If user has not entered valid information
-            if frame_name == "SaveRecipeToJsonFrame":
+            if frame_name == "SaveRecipeToJsonFrame": # Custom error messages for the uploading json frame
                 self.display_user_input_status.set("ERROR: Upload a valid image file.") # Change status box to inform user
             else:
                 self.display_user_input_status.set("ERROR: Enter required information then press the save button.") # Change status box to inform user
@@ -518,6 +571,7 @@ class Program:
         else:
             self.able_to_proceed.set(0) # Reset the counter for the next frame
             self.display_user_input_status.set("----") # Reset the status box
+            self.clear_entry_widgets() # Clear entries from all inputs
             self.show_frame(frame_name) # Show the next frame
      
              
@@ -532,8 +586,10 @@ class Program:
             self.current_step.set(self.current_step.get() + 1) # Increment the step counter by one
             self.able_to_proceed.set(0) # Reset the counter for the next frame
             self.display_user_input_status.set("----") # Reset the status box
+            self.clear_entry_widgets() # Clear entries from all inputs
             self.show_frame("ShowCurrentInstructionsFrame") # Go to next frame
-            
+    
+        
     def find_selected_recipe(self):
         '''Once user has selected what recipe they want to edit and push the edit
         button, this will store the .json contents in self.edited_recipe_info, 
@@ -556,6 +612,7 @@ class Program:
         # Change frames
         self.show_frame("HomeEditSpecificRecipeFrame")
     
+
     def delete_recipe(self):
         '''Deletes the specified recipe from /data'''
         
@@ -578,22 +635,51 @@ class Program:
         with open("./data/recipe_index.json", "w") as f:
             json.dump(current_json_index, f, indent = 4)
             
-        # Update combobox, this is so that the user doesn't see it again once it is deleted.
+        # Update comboboxes, this is so that the user doesn't see it again once it is deleted.
         # This will open up the dictionary which stores the actual name given by the user, and the name of the folder.
         with open("./data/recipe_index.json") as f:
-            dict_recipes_combobox = json.load(f)        
-        
+            dict_recipes_combobox = json.load(f)    
+            
         self.list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Creates a list of the non-folder names of the recipes
+        self.list_recipes_folder_name = list(dict_recipes_combobox.values()) # Creates a list which is of the folder type names of each recipe (used for random recipe button)        
         
         # Replace the combobox that is there to force a refresh of contents
         self.home_edit_recipes_frame_combobox = ttk.Combobox(self.home_edit_recipes_frame,
                                                              state = "readonly",
-                                                             values = self.list_recipes_combobox_name)
+                                                             values = self.list_recipes_combobox_name,
+                                                             font = "verdana 15")
         self.home_edit_recipes_frame_combobox.grid(row = 1, column = 0,
                                                    sticky = "NESW",
                                                    padx = 10, pady = 10)
         
+        # Create and pack combo box for component 1
+        self.home_choosing_to_view_recipe_frame_combobox = ttk.Combobox(self.home_choosing_to_view_recipe_frame, 
+                                                   state = "readonly",
+                                                   values = self.list_recipes_combobox_name,
+                                                   font = "verdana 15")
+        self.home_choosing_to_view_recipe_frame_combobox.grid(row = 1, column = 0, 
+                                                    sticky = "NESW",
+                                                    padx = 10, pady = 10)
+        
         self.show_frame("HomeEditRecipesFrame") # Return user to homepage
+    
+    
+    def clear_entry_widgets(self):
+        '''This will clear all entryboxes present in the program'''
+        self.ask_recipe_name_frame_textbox.delete(0, END) 
+        self.ask_recipe_author_source_frame_textbox.delete(0, END)
+        self.ask_recipe_prep_time_frame_textbox.delete(0, END)
+        self.ask_recipe_total_time_frame_textbox.delete(0, END)
+        self.ask_recipe_how_many_serves_frame_textbox.delete(0, END)
+        self.add_ingredient_name_frame_textbox.delete(0, END)
+        self.add_ingredient_amount_frame_textbox.delete(0, END)
+        self.add_ingredient_generic_text_frame_textbox.delete(0, END)
+        self.add_new_instruction_frame_textbox.delete(0, END)
+        self.ask_recipe_timer_frame_textbox.delete(0, END)
+        
+        # Clear combobox
+        self.add_ingredient_quantity_type_frame_combobox.set("")
+    
     
     def create_HomePageFrame(self):
         '''Creates homepage frame'''
@@ -616,7 +702,7 @@ class Program:
                                              text = "Virtual cookbook",
                                              bg = self.heading_bg,
                                              fg = self.heading_txt,
-                                             font = "verdana 25 bold")
+                                             font = "verdana 30 bold")
         self.home_page_frame_heading.grid(row = 0, column = 0,
                                           sticky = "NESW",
                                           columnspan = 2,
@@ -627,7 +713,8 @@ class Program:
                                                text = "View recipes",
                                                bg = self.button_bg,
                                                fg = self.button_txt,
-                                               command=lambda: self.show_frame("HomeChoosingToViewRecipeFrame"))
+                                               command=lambda: self.show_frame("HomeChoosingToViewRecipeFrame"),
+                                               font = "verdana 15")
         self.home_page_frame_viewbutt.grid(row = 1, column = 0, sticky = "NESW",
                                            columnspan = 2, padx = 10, pady = 10)
         
@@ -636,7 +723,8 @@ class Program:
                                               text = "Add recipes",
                                               bg = self.button_bg,
                                               fg = self.button_txt,
-                                              command=lambda: self.show_frame("AskRecipeNameFrame"))
+                                              command=lambda: self.show_frame("AskRecipeNameFrame"),
+                                              font = "verdana 15")
         self.home_page_frame_addbutt.grid(row = 2, column = 0, sticky = "NESW",
                                           columnspan = 2, padx = 10, pady = 10)
         
@@ -645,7 +733,8 @@ class Program:
                                                text = "Edit recipes",
                                                bg = self.button_bg,
                                                fg = self.button_txt,
-                                               command=lambda: self.show_frame("HomeEditRecipesFrame"))
+                                               command=lambda: self.show_frame("HomeEditRecipesFrame"),
+                                               font = "verdana 15")
         self.home_page_frame_editbutt.grid(row = 3, column = 0, sticky = "NESW",
                                            columnspan = 2, padx = 10, pady = 10)
         
@@ -654,7 +743,8 @@ class Program:
                                                    text = "Settings",
                                                    command=lambda: self.show_frame("SettingsFrame"),
                                                    bg = self.button_bg,
-                                                   fg = self.button_txt)
+                                                   fg = self.button_txt,
+                                                   font = "verdana 15")
         self.home_page_frame_settingsbutt.grid(row = 4, column = 0, 
                                                sticky = "NESW", 
                                                padx = 10, pady = 10)
@@ -664,7 +754,8 @@ class Program:
                                                text = "Quit program",
                                                command = self.quit_program,
                                                bg = self.button_bg,
-                                               fg = self.button_txt)
+                                               fg = self.button_txt,
+                                               font = "verdana 15 bold")
         self.home_page_frame_quitbutt.grid(row = 4, column = 1,
                                            sticky = "NESW", padx = 10,
                                            pady = 10)
@@ -693,7 +784,7 @@ class Program:
                                             text = "Settings", 
                                             bg = self.heading_bg,
                                             fg = self.heading_txt,
-                                            font = "verdana 25 bold")
+                                            font = "verdana 15 bold")
         self.settings_frame_heading.grid(row = 0, column = 0, sticky = "NESW",
                                          columnspan = 2, padx = 10, pady = 10)
         
@@ -701,7 +792,8 @@ class Program:
         self.settings_frame_subhead1 = Label(self.settings_frame,
                                             text = "Change theme:",
                                             bg = self.subheading_bg,
-                                            fg = self.subheading_txt)
+                                            fg = self.subheading_txt,
+                                            font = "verdana 15")
         self.settings_frame_subhead1.grid(row = 1, column = 0,
                                           sticky = "NESW",
                                           padx = 10, pady = 10)
@@ -718,8 +810,8 @@ class Program:
         # Create and pack combobox for changing theme
         self.settings_frame_combobox1 = ttk.Combobox(self.settings_frame,
                                                      state = "readonly",
-                                                     values = list_theme_names)
-        self.settings_frame_combobox1.current() 
+                                                     values = list_theme_names,
+                                                     font = "verdana 15") 
         self.settings_frame_combobox1.grid(row = 1, column = 1,
                                            sticky = "NESW",
                                            padx = 10, pady = 10)
@@ -729,7 +821,8 @@ class Program:
                                               text = "Save theme details",
                                               bg = self.button_bg,
                                               fg = self.button_txt,
-                                              command=lambda: self.set_theme(self.settings_frame_combobox1.get()))
+                                              command=lambda: self.set_theme(self.settings_frame_combobox1.get()),
+                                              font = "verdana 15")
         self.settings_frame_savebutt.grid(row = 2, column = 0, sticky = "NESW",
                                           columnspan = 2, padx = 10, pady = 10)
         
@@ -738,7 +831,8 @@ class Program:
                                               text = "Back",
                                               command=lambda: self.show_frame("HomePageFrame"),
                                               bg = self.button_bg,
-                                              fg = self.button_txt)
+                                              fg = self.button_txt,
+                                              font = "verdana 15 bold")
         self.settings_frame_backbutt.grid(row = 3, column = 0,
                                           sticky = "NESW",
                                           columnspan = 2, padx = 10, pady = 10)
@@ -755,7 +849,7 @@ class Program:
         
         # Used in conjunction with sticky to make it fill the window
         self.home_choosing_to_view_recipe_frame.columnconfigure([0], minsize=150)
-        self.home_choosing_to_view_recipe_frame.rowconfigure([0,1,2,3], minsize=50)
+        self.home_choosing_to_view_recipe_frame.rowconfigure([0,1,2,3,4], minsize=50)
         
         # Make each grid in the frame expandable
         for i in range(4): # 4 rows
@@ -768,15 +862,25 @@ class Program:
         with open("./data/recipe_index.json") as f:
             dict_recipes_combobox = json.load(f)
         
-        list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Creates a list of the non-folder names of the recipes
-        list_recipes_folder_name = list(dict_recipes_combobox.values()) # Creates a list which is of the folder type names of each recipe (used for random recipe button)
+        self.list_recipes_combobox_name = list(dict_recipes_combobox.keys()) # Creates a list of the non-folder names of the recipes
+        self.list_recipes_folder_name = list(dict_recipes_combobox.values()) # Creates a list which is of the folder type names of each recipe (used for random recipe button)
+        
+        # Create and pack heading
+        self.home_choosing_to_view_recipe_frame_heading = Label(self.home_choosing_to_view_recipe_frame,
+                                                                text = "Viewing: Select a recipe from the combo box below",
+                                                                bg = self.heading_bg,
+                                                                fg = self.heading_txt,
+                                                                font = "verdana 15 bold")
+        self.home_choosing_to_view_recipe_frame_heading.grid(row = 0, column = 0,
+                                                             sticky = "NESW",
+                                                             padx = 10, pady = 10)
         
         # Create and pack combo box
         self.home_choosing_to_view_recipe_frame_combobox = ttk.Combobox(self.home_choosing_to_view_recipe_frame, 
                                                    state = "readonly",
-                                                   values = list_recipes_combobox_name)
-        self.home_choosing_to_view_recipe_frame_combobox.current(0) # Ensures that the first recipe is auto selected
-        self.home_choosing_to_view_recipe_frame_combobox.grid(row = 0, column = 0, 
+                                                   values = self.list_recipes_combobox_name,
+                                                   font = "verdana 15")
+        self.home_choosing_to_view_recipe_frame_combobox.grid(row = 1, column = 0, 
                                                     sticky = "NESW",
                                                     padx = 10, pady = 10)
         
@@ -786,8 +890,9 @@ class Program:
                                             text = "View recipe", 
                                             command=lambda: self.create_ShowRecipeFrame(dict_recipes_combobox[self.home_choosing_to_view_recipe_frame_combobox.get()]),
                                             bg = self.button_bg,
-                                            fg = self.button_txt) 
-        self.home_choosing_to_view_recipe_frame_viewbutt.grid(row = 1, column = 0, 
+                                            fg = self.button_txt,
+                                            font = "verdana 15") 
+        self.home_choosing_to_view_recipe_frame_viewbutt.grid(row = 2, column = 0, 
                                                               sticky="NESW",
                                                               padx = 10,
                                                               pady = 10)
@@ -795,10 +900,11 @@ class Program:
         # Similar to the view recipe button, except it uses a random item from the list "list_recipes_folder_name"
         self.home_choosing_to_view_recipe_frame_ranbutt = Button(self.home_choosing_to_view_recipe_frame, 
                                             text = "Pick a random recipe for me!",
-                                            command=lambda: self.create_ShowRecipeFrame(random.choice(list_recipes_folder_name)),
+                                            command=lambda: self.create_ShowRecipeFrame(random.choice(self.list_recipes_folder_name)),
                                             bg = self.button_bg,
-                                            fg = self.button_txt)
-        self.home_choosing_to_view_recipe_frame_ranbutt.grid(row = 2, column = 0, 
+                                            fg = self.button_txt,
+                                            font = "verdana 15")
+        self.home_choosing_to_view_recipe_frame_ranbutt.grid(row = 3, column = 0, 
                                                 sticky = "NESW", padx = 10,
                                                 pady = 10)
         
@@ -807,8 +913,9 @@ class Program:
                                                                   text = "Back",
                                                                   bg = self.button_bg,
                                                                   fg = self.button_txt,
-                                                                  command=lambda: self.show_frame("HomePageFrame"))
-        self.home_choosing_to_view_recipe_frame_backbutt.grid(row = 3, column = 0,
+                                                                  command=lambda: self.show_frame("HomePageFrame"),
+                                                                  font = "verdana 15 bold")
+        self.home_choosing_to_view_recipe_frame_backbutt.grid(row = 4, column = 0,
                                                               sticky = "NESW",
                                                               padx = 10, 
                                                               pady = 10)
@@ -851,7 +958,7 @@ class Program:
                                           textvariable=self.recipe_name, 
                                           bg = self.heading_bg, 
                                           fg = self.heading_txt,
-                                          font = "Verdana 20 bold")
+                                          font = "Verdana 15 bold")
         self.show_recipe_frame_heading.grid(row = 0, column = 0, 
                                             sticky = "NESW",
                                             padx = 10, pady = 10)
@@ -897,7 +1004,7 @@ class Program:
                                          textvariable=self.recipe_info, 
                                          bg = self.subheading_bg,
                                          fg = self.subheading_txt,
-                                         font = "Verdana 10")
+                                         font = "Verdana")
         self.show_recipe_frame_recipe_info_textbox.grid(row = 2, column = 0, 
                                                         sticky="NESW",
                                                         padx = 10, pady = 10)
@@ -907,7 +1014,7 @@ class Program:
         
         self.list_of_ingredients = current_recipe["ingredients"] # Find list of ingredients from json
         for each_item in range(len(self.list_of_ingredients)): # For each ingredient, we can add it to the temporary variable
-            self.building_recipe_ingredients += f"{self.list_of_ingredients[each_item]}\n"       
+            self.building_recipe_ingredients += f"{self.list_of_ingredients[each_item]}\n\n"       
         
         # Set the concatnated information into the textvariable
         self.recipe_ingredients.set(self.building_recipe_ingredients)
@@ -918,7 +1025,8 @@ class Program:
                                                bg = self.subheading_bg,
                                                fg = self.subheading_txt, 
                                                justify = LEFT,
-                                               wraplength = 400)
+                                               wraplength = 400,
+                                               font = "verdana 8")
         self.show_recipe_frame_ingredients_textbox.grid(row = 0, column = 1, 
                                                         sticky="NESW",
                                                         rowspan = 3,
@@ -941,7 +1049,8 @@ class Program:
                                          textvariable=self.recipe_instructions,
                                          wraplength=400, justify = LEFT,
                                          bg = self.subheading_bg,
-                                         fg = self.subheading_txt)
+                                         fg = self.subheading_txt,
+                                         font = "verdana 8")
         self.show_recipe_frame_instructions_textbox.grid(row = 0, column = 2, 
                                                          sticky="NESW",
                                                          rowspan = 3,
@@ -955,7 +1064,8 @@ class Program:
         # Time textlabel
         self.show_recipe_frame_timer_label = Label(self.show_recipe_frame, textvariable=self.recipe_timer, 
                                  bg = self.subheading_bg,
-                                 fg = self.subheading_txt)
+                                 fg = self.subheading_txt,
+                                 font = "verdana 15")
         self.show_recipe_frame_timer_label .grid(row = 0, column = 3, 
                                                  sticky = "NESW", padx = 10,
                                                  pady = 10)
@@ -972,7 +1082,8 @@ class Program:
         self.show_recipe_frame_backbutt = Button(self.show_recipe_frame, text = "Back",
                                   command=lambda: self.show_frame("HomeChoosingToViewRecipeFrame"),
                                   bg = self.button_bg,
-                                  fg = self.button_txt)
+                                  fg = self.button_txt,
+                                  font = "verdana 15 bold")
         self.show_recipe_frame_backbutt.grid(row = 3, column = 0, columnspan = 4, 
                                              sticky="NESW", padx = 10, pady = 10)        
         
@@ -998,9 +1109,11 @@ class Program:
         
         # Creating and packing heading widget
         self.ask_recipe_name_frame_heading = Label(self.ask_recipe_name_frame,
-                                                   text = "Enter name of recipe:",
+                                                   text = "Enter name of recipe (e.g 'muffins') in text box below, then press 'save', then 'next'.",
                                                    bg = self.heading_bg,
-                                                   fg = self.heading_txt)
+                                                   fg = self.heading_txt,
+                                                   font = "verdana 15 bold",
+                                                   wraplength = 800)
         self.ask_recipe_name_frame_heading.grid(row = 0, column = 0, sticky = "NESW",
                                                 columnspan = 3, padx = 10, 
                                                 pady = 10)
@@ -1008,7 +1121,8 @@ class Program:
         # Creating and packing text box
         self.ask_recipe_name_frame_textbox = Entry(self.ask_recipe_name_frame,
                                                    bg = self.subheading_bg,
-                                                   fg = self.subheading_txt)
+                                                   fg = self.subheading_txt,
+                                                   font = "verdana 15")
         self.ask_recipe_name_frame_textbox.grid(row = 1, column = 0,
                                                 columnspan = 3,
                                                 sticky = "NESW",
@@ -1019,7 +1133,8 @@ class Program:
                                                      text = "Next",
                                                      command=lambda: self.allow_user_to_proceed("AskRecipeAuthorSourceFrame"),
                                                      bg = self.button_bg,
-                                                     fg = self.button_txt)
+                                                     fg = self.button_txt,
+                                                     font = "verdana 15")
         self.ask_recipe_name_frame_nextbutt.grid(row = 2, column = 0, 
                                                 sticky = "NESW",
                                                 padx = 10, pady = 10)
@@ -1029,7 +1144,8 @@ class Program:
                                                      text = "Save",
                                                      command=lambda: self.save_information("name", self.ask_recipe_name_frame_textbox.get()),
                                                      bg = self.button_bg,
-                                                     fg = self.button_txt) 
+                                                     fg = self.button_txt,
+                                                     font = "verdana 15 bold") 
         self.ask_recipe_name_frame_savebutt.grid(row = 2, column = 1, 
                                                  sticky = "NESW",
                                                  padx = 10, pady = 10)
@@ -1039,7 +1155,8 @@ class Program:
                                                      text = "Back to main menu",
                                                      bg = self.button_bg,
                                                      fg = self.button_txt,
-                                                     command=lambda: self.show_frame("HomePageFrame"))
+                                                     command=lambda: self.show_frame("HomePageFrame"),
+                                                     font = "verdana 15")
         self.ask_recipe_name_frame_backbutt.grid(row = 2, column = 2,
                                                  sticky = "NESW", padx = 10,
                                                  pady = 10)
@@ -1048,7 +1165,8 @@ class Program:
         self.ask_recipe_frame_statusbox = Label(self.ask_recipe_name_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.ask_recipe_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 3)
         
@@ -1075,9 +1193,11 @@ class Program:
         
         # Create and pack heading widget
         self.ask_recipe_author_source_frame_heading = Label(self.ask_recipe_author_source_frame,
-                                                            text = "Enter author's name or source of recipe:",
+                                                            text = "Enter author's name or source of recipe (e.g 'Matthew') in text box below then press 'save', then 'next'.",
                                                             bg = self.heading_bg,
-                                                            fg = self.heading_txt)
+                                                            fg = self.heading_txt,
+                                                            font = "verdana 15 bold",
+                                                            wraplength = 800)
         self.ask_recipe_author_source_frame_heading.grid(row = 0, column = 0,
                                                          sticky = "NESW",
                                                          columnspan = 2,
@@ -1085,7 +1205,8 @@ class Program:
         # Create and pack text box
         self.ask_recipe_author_source_frame_textbox = Entry(self.ask_recipe_author_source_frame,
                                                             bg = self.subheading_bg,
-                                                            fg = self.subheading_txt)
+                                                            fg = self.subheading_txt,
+                                                            font = "verdana 15")
         self.ask_recipe_author_source_frame_textbox.grid(row = 1, column = 0,
                                                          sticky = "NESW", 
                                                          columnspan = 2,
@@ -1096,7 +1217,8 @@ class Program:
                                                               text = "Next",
                                                               command=lambda: self.allow_user_to_proceed("AskRecipePrepTimeFrame"),
                                                               bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              fg = self.button_txt,
+                                                              font = "verdana 15")
         self.ask_recipe_author_source_frame_nextbutt.grid(row = 2, column = 0,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -1106,7 +1228,8 @@ class Program:
                                                               text = "Save",
                                                               command=lambda: self.save_information("author/source", self.ask_recipe_author_source_frame_textbox.get()),
                                                               bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              fg = self.button_txt,
+                                                              font = "verdana 15 bold")
         self.ask_recipe_author_source_frame_savebutt.grid(row = 2, column = 1,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -1115,7 +1238,8 @@ class Program:
         self.ask_recipe_author_source_frame_statusbox = Label(self.ask_recipe_author_source_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.ask_recipe_author_source_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)        
         
@@ -1141,9 +1265,11 @@ class Program:
         
         # Create and pack heading widget
         self.ask_recipe_prep_time_frame_heading = Label(self.ask_recipe_prep_time_frame,
-                                                        text = "Enter prep time:",
+                                                        text = "Enter prep time of recipe (e.g '15 minutes') in text box below, then press 'save', then 'next'.",
                                                         bg = self.heading_bg,
-                                                        fg = self.heading_txt)
+                                                        fg = self.heading_txt,
+                                                        font = "verdana 15 bold",
+                                                        wraplength = 800)
         self.ask_recipe_prep_time_frame_heading.grid(row = 0, column = 0,
                                                      sticky = "NESW", 
                                                      columnspan = 2,
@@ -1152,7 +1278,8 @@ class Program:
         # Create and pack text box widget
         self.ask_recipe_prep_time_frame_textbox = Entry(self.ask_recipe_prep_time_frame,
                                                         bg = self.subheading_bg,
-                                                        fg = self.subheading_txt)
+                                                        fg = self.subheading_txt,
+                                                        font = "verdana 15")
         self.ask_recipe_prep_time_frame_textbox.grid(row = 1, column = 0,
                                                      sticky = "NESW",
                                                      columnspan = 2,
@@ -1163,7 +1290,8 @@ class Program:
                                                           text = "Next",
                                                           command=lambda: self.allow_user_to_proceed("AskRecipeTotalTimeFrame"),
                                                           bg = self.button_bg,
-                                                          fg = self.button_txt)
+                                                          fg = self.button_txt,
+                                                          font = "verdana 15")
         self.ask_recipe_prep_time_frame_nextbutt.grid(row = 2, column = 0,
                                                       sticky = "NESW",
                                                       padx = 10, pady = 10)
@@ -1173,7 +1301,8 @@ class Program:
                                                           text = "Save",
                                                           command=lambda: self.save_information("prep_time", self.ask_recipe_prep_time_frame_textbox.get()),
                                                           bg = self.button_bg,
-                                                          fg = self.button_txt)
+                                                          fg = self.button_txt,
+                                                          font = "verdana 15 bold")
         self.ask_recipe_prep_time_frame_savebutt.grid(row = 2, column = 1,
                                                       sticky = "NESW",
                                                       padx = 10, pady = 10)
@@ -1182,7 +1311,8 @@ class Program:
         self.ask_recipe_prep_time_frame_statusbox = Label(self.ask_recipe_prep_time_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.ask_recipe_prep_time_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)        
         
@@ -1208,9 +1338,11 @@ class Program:
         
         # Create and pack heading widget
         self.ask_recipe_total_time_frame_heading = Label(self.ask_recipe_total_time_frame,
-                                                         text = "Enter total cooking time:",
+                                                         text = "Enter total cooking time (e.g '30 minutes') in text box below, then press 'save', then 'next'.",
                                                          bg = self.heading_bg,
-                                                         fg = self.heading_txt)
+                                                         fg = self.heading_txt,
+                                                         font = "verdana 15 bold",
+                                                         wraplength = 800)
         self.ask_recipe_total_time_frame_heading.grid(row = 0, column = 0,
                                                       sticky = "NESW", 
                                                       columnspan = 2,
@@ -1219,7 +1351,8 @@ class Program:
         # Create and pack entry box so that user can enter how long in total it will take to make that recipe
         self.ask_recipe_total_time_frame_textbox = Entry(self.ask_recipe_total_time_frame,
                                                          bg = self.subheading_bg,
-                                                         fg = self.subheading_txt)
+                                                         fg = self.subheading_txt,
+                                                         font = "verdana 15")
         self.ask_recipe_total_time_frame_textbox.grid(row = 1, column = 0, 
                                                       sticky = "NESW",
                                                       columnspan = 2,
@@ -1230,7 +1363,8 @@ class Program:
                                                            text = "Next",
                                                            command=lambda: self.allow_user_to_proceed("AskRecipeHowManyServesFrame"),
                                                            bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           fg = self.button_txt,
+                                                           font = "verdana 15")
         self.ask_recipe_total_time_frame_nextbutt.grid(row = 2, column = 0,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
@@ -1240,7 +1374,8 @@ class Program:
                                                            text = "Save",
                                                            command=lambda: self.save_information("total_time", self.ask_recipe_total_time_frame_textbox.get()),
                                                            bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           fg = self.button_txt,
+                                                           font = "verdana 15 bold")
         self.ask_recipe_total_time_frame_savebutt.grid(row = 2, column = 1,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
@@ -1249,7 +1384,8 @@ class Program:
         self.ask_recipe_total_time_frame_statusbox = Label(self.ask_recipe_total_time_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.ask_recipe_total_time_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)
         
@@ -1276,9 +1412,11 @@ class Program:
             
         # Creates and packs heading widget
         self.ask_recipe_how_many_serves_frame_heading = Label(self.ask_recipe_how_many_serves_frame,
-                                                              text = "How many people does this recipe serve?",
+                                                              text = "Enter how many people this recipe serves (e.g 'four') in the text box below, then press 'save', then 'next.",
                                                               bg = self.heading_bg,
-                                                              fg = self.heading_txt)
+                                                              fg = self.heading_txt,
+                                                              font = "verdana 15 bold",
+                                                              wraplength = 800)
         self.ask_recipe_how_many_serves_frame_heading.grid(row = 0, column = 0,
                                                            sticky = "NESW",
                                                            columnspan = 2,
@@ -1287,7 +1425,8 @@ class Program:
         # Creates and packs entry box for user to input number of servings
         self.ask_recipe_how_many_serves_frame_textbox = Entry(self.ask_recipe_how_many_serves_frame,
                                                               bg = self.subheading_bg,
-                                                              fg = self.subheading_txt)
+                                                              fg = self.subheading_txt,
+                                                              font = "verdana 15")
         self.ask_recipe_how_many_serves_frame_textbox.grid(row = 1, column = 0,
                                                            sticky = "NESW",
                                                            columnspan = 2,
@@ -1298,7 +1437,8 @@ class Program:
                                                                 text = "Next",
                                                                 command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"),
                                                                 bg = self.button_bg,
-                                                                fg = self.button_txt)
+                                                                fg = self.button_txt,
+                                                                font = "verdana 15")
         self.ask_recipe_how_many_serves_frame_nextbutt.grid(row = 2, column = 0,
                                                             sticky = "NESW",
                                                             padx = 10, pady = 10)
@@ -1308,7 +1448,8 @@ class Program:
                                                                 text = "Save",
                                                                 command=lambda: self.save_information("serves", self.ask_recipe_how_many_serves_frame_textbox.get()),
                                                                 bg = self.button_bg,
-                                                                fg = self.button_txt)
+                                                                fg = self.button_txt,
+                                                                font = "verdana 15 bold")
         self.ask_recipe_how_many_serves_frame_savebutt.grid(row = 2, column = 1,
                                                             sticky = "NESW",
                                                             padx = 10, pady = 10)
@@ -1317,7 +1458,8 @@ class Program:
         self.ask_recipe_how_many_serves_frame_statusbox = Label(self.ask_recipe_how_many_serves_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.ask_recipe_how_many_serves_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)        
         
@@ -1344,9 +1486,11 @@ class Program:
         
         # Create and pack heading widget
         self.show_current_ingredients_frame_heading = Label(self.show_current_ingredients_frame,
-                                                            text = "Current ingredients:",
+                                                            text = "Below is the ingredient(s) you have added so far to this recipe. \n\n To add an ingredient, press the 'add' button. \n\n Once you are finished, press 'save' then 'next'.",
                                                             bg = self.heading_bg,
-                                                            fg = self.heading_txt)
+                                                            fg = self.heading_txt,
+                                                            font = "verdana 15 bold",
+                                                            wraplength = 800)
         self.show_current_ingredients_frame_heading.grid(row = 0, column = 0,
                                                          sticky = "NESW",
                                                          columnspan = 3,
@@ -1356,7 +1500,8 @@ class Program:
         self.show_current_ingredients_frame_list = Label(self.show_current_ingredients_frame,
                                                          textvariable = self.display_ingredients,
                                                          bg = self.subheading_bg,
-                                                         fg = self.subheading_txt)
+                                                         fg = self.subheading_txt,
+                                                         font = "verdana 8")
         self.show_current_ingredients_frame_list.grid(row = 1, column = 0,
                                                       sticky = "NESW",
                                                       columnspan = 3,
@@ -1367,7 +1512,8 @@ class Program:
                                                              text = "Add",
                                                              command=lambda: self.show_frame("AddIngredientQuantityTypeFrame"),
                                                              bg = self.button_bg,
-                                                             fg = self.button_txt)
+                                                             fg = self.button_txt,
+                                                             font = "verdana 15")
         self.show_current_ingredients_frame_addbutt.grid(row = 2, column = 0,
                                                          sticky = "NESW",
                                                          padx = 10, pady = 10)
@@ -1377,7 +1523,8 @@ class Program:
                                                               text = "Next",
                                                               command=lambda: self.allow_user_to_proceed("ShowCurrentInstructionsFrame"),
                                                               bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              fg = self.button_txt,
+                                                              font = "verdana 15")
         self.show_current_ingredients_frame_nextbutt.grid(row = 2, column = 1,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -1387,7 +1534,8 @@ class Program:
                                                               text = "Save",
                                                               command=lambda: self.save_information("ingredients", self.new_ingredient_info),
                                                               bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              fg = self.button_txt,
+                                                              font = "verdana 15 bold")
         self.show_current_ingredients_frame_savebutt.grid(row = 2, column = 2,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -1396,7 +1544,8 @@ class Program:
         self.show_current_ingredients_frame_statusbox = Label(self.show_current_ingredients_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.show_current_ingredients_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 3)      
         
@@ -1422,9 +1571,11 @@ class Program:
             
         # Create heading and pack heading
         self.add_ingredient_quantity_type_frame_heading = Label(self.add_ingredient_quantity_type_frame,
-                                                                text = "Select quantity type:",
+                                                                text = "You are now adding an ingredient: \n\n Select a quantity type from the combo box below (e.g 'Gram (g)', then press 'save', then 'next'.",
                                                                 bg = self.heading_bg,
-                                                                fg = self.heading_txt)
+                                                                fg = self.heading_txt,
+                                                                font = "verdana 15 bold",
+                                                                wraplength = 800)
         self.add_ingredient_quantity_type_frame_heading.grid(row = 0, column = 0,
                                                              sticky = "NESW",
                                                              columnspan = 2,
@@ -1441,7 +1592,8 @@ class Program:
         # Create and pack combo box 
         self.add_ingredient_quantity_type_frame_combobox = ttk.Combobox(self.add_ingredient_quantity_type_frame,
                                                                         state = "readonly", # So that user cannot add their own quantity values
-                                                                        values = quantity_types_keys) # Set values to what is in the dictionary keys
+                                                                        values = quantity_types_keys,
+                                                                        font = "verdana 15") # Set values to what is in the dictionary keys
         self.add_ingredient_quantity_type_frame_combobox.grid(row = 1, column = 0,
                                                               sticky = "NESW",
                                                               columnspan = 2,
@@ -1453,7 +1605,8 @@ class Program:
                                                                   text = "Next",
                                                                   command=self.create_generic_text_or_other_frame, # Special case, as user might want to add generic text
                                                                   bg = self.button_bg,
-                                                                  fg = self.button_txt)
+                                                                  fg = self.button_txt,
+                                                                  font = "verdana 15")
         self.add_ingredient_quantity_type_frame_nextbutt.grid(row = 2, column = 0,
                                                               sticky = "NESW",
                                                               padx = 10,
@@ -1464,7 +1617,8 @@ class Program:
                                                                   text = "Save",
                                                                   command=lambda: self.save_temp_ingredient_info("quantity_type", self.add_ingredient_quantity_type_frame_combobox.get()),
                                                                   bg = self.button_bg,
-                                                                  fg = self.button_txt) 
+                                                                  fg = self.button_txt,
+                                                                  font = "verdana 15 bold") 
         self.add_ingredient_quantity_type_frame_savebutt.grid(row = 2, column = 1,
                                                              sticky = "NESW",
                                                              padx = 10,
@@ -1491,9 +1645,11 @@ class Program:
             
         # Create and pack heading
         self.add_ingredient_name_frame_heading = Label(self.add_ingredient_name_frame,
-                                                       text = "Enter name of ingredient:",
+                                                       text = "You are now adding an ingredient: \n\n Enter name of ingredient (e.g 'all-purpose flour') in the text box below, then press 'save' then 'next'.",
                                                        bg = self.heading_bg,
-                                                       fg = self.heading_txt)
+                                                       fg = self.heading_txt,
+                                                       font = "verdana 15 bold",
+                                                       wraplength = 800)
         self.add_ingredient_name_frame_heading.grid(row = 0, column = 0, 
                                                     sticky = "NESW",
                                                     columnspan = 2,
@@ -1502,7 +1658,8 @@ class Program:
         # Create and pack text box which stores name of ingredient
         self.add_ingredient_name_frame_textbox = Entry(self.add_ingredient_name_frame,
                                                        bg = self.subheading_bg,
-                                                       fg = self.subheading_txt)
+                                                       fg = self.subheading_txt,
+                                                       font = "verdana 15")
         self.add_ingredient_name_frame_textbox.grid(row = 1, column = 0,
                                                      sticky = "NESW",
                                                      columnspan = 2,
@@ -1513,7 +1670,8 @@ class Program:
                                                          text = "Save",
                                                          command=lambda: self.save_temp_ingredient_info("quantity_name", self.add_ingredient_name_frame_textbox.get()),
                                                          bg = self.button_bg,
-                                                         fg = self.button_txt) 
+                                                         fg = self.button_txt,
+                                                         font = "verdana 15 bold") 
         self.add_ingredient_name_frame_savebutt.grid(row = 2, column = 1,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -1523,7 +1681,8 @@ class Program:
                                                          text = "Next",
                                                          command=lambda: self.allow_user_to_proceed("AddIngredientAmountFrame"),
                                                          bg = self.button_bg,
-                                                         fg = self.button_txt)
+                                                         fg = self.button_txt,
+                                                         font = "verdana 15")
         self.add_ingredient_name_frame_nextbutt.grid(row = 2, column = 0,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -1532,7 +1691,8 @@ class Program:
         self.add_ingredient_name_frame_statusbox = Label(self.add_ingredient_name_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.add_ingredient_name_frame_statusbox.grid(row = 3, column = 0, 
                                                       sticky = "NESW", 
                                                       columnspan = 2)        
@@ -1559,10 +1719,10 @@ class Program:
             
         # Creates and packs heading
         self.add_ingredient_amount_frame_heading1 = Label(self.add_ingredient_amount_frame,
-                                                         text = "Enter amount of this ingredient type:",
-                                                         wraplength = 150,
+                                                         text = "Enter amount of this ingredient named:",
                                                          bg = self.heading_bg,
-                                                         fg = self.heading_txt)
+                                                         fg = self.heading_txt,
+                                                         font = "verdana 15")
         self.add_ingredient_amount_frame_heading1.grid(row = 0, column = 0, 
                                                       sticky = "NESW", 
                                                       padx = 10,
@@ -1572,7 +1732,8 @@ class Program:
         self.add_ingredient_amount_frame_quantityname = Label(self.add_ingredient_amount_frame,
                                                               textvariable = self.display_ingredient_name,
                                                               bg = self.heading_bg,
-                                                              fg = self.heading_txt)
+                                                              fg = self.heading_txt,
+                                                              font = "verdana 15 bold")
         self.add_ingredient_amount_frame_quantityname.grid(row = 0, column = 1,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
@@ -1580,7 +1741,8 @@ class Program:
         # Creates and packs entrybox
         self.add_ingredient_amount_frame_textbox = Entry(self.add_ingredient_amount_frame,
                                                          bg = self.subheading_bg,
-                                                         fg = self.subheading_txt)
+                                                         fg = self.subheading_txt,
+                                                         font = "verdana 15")
         self.add_ingredient_amount_frame_textbox.grid(row = 1, column = 0, 
                                                       sticky = "NESW",
                                                       columnspan = 2, padx = 10,
@@ -1588,9 +1750,10 @@ class Program:
         
         # Creates and packs heading for "in"
         self.add_ingredient_amount_frame_heading2 = Label(self.add_ingredient_amount_frame,
-                                                          text = "in:",
+                                                          text = "in the quantity type:",
                                                           bg = self.subheading_bg,
-                                                          fg = self.subheading_txt)
+                                                          fg = self.subheading_txt,
+                                                          font = "verdana 15")
         self.add_ingredient_amount_frame_heading2.grid(row = 2, column = 0,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
@@ -1599,7 +1762,8 @@ class Program:
         self.add_ingredient_amount_frame_quantitytype = Label(self.add_ingredient_amount_frame,
                                                               textvariable = self.display_ingredient_type,
                                                               bg = self.subheading_bg,
-                                                              fg = self.subheading_txt)
+                                                              fg = self.subheading_txt,
+                                                              font = "verdana 15 bold")
         self.add_ingredient_amount_frame_quantitytype.grid(row = 2, column = 1,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
@@ -1609,7 +1773,8 @@ class Program:
                                                            text = "Next",
                                                            command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"),
                                                            bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           fg = self.button_txt,
+                                                           font = "verdana 15")
         self.add_ingredient_amount_frame_nextbutt.grid(row = 3, column = 0,
                                                        sticky = "NESW",
                                                        padx = 10, pady = 10)
@@ -1619,7 +1784,8 @@ class Program:
                                                            text = "Save",
                                                            command=lambda: self.save_temp_ingredient_info("quantity_amount", self.add_ingredient_amount_frame_textbox.get()),
                                                            bg = self.button_bg,
-                                                           fg = self.button_txt)
+                                                           fg = self.button_txt,
+                                                           font = "verdana 15 bold")
         self.add_ingredient_amount_frame_savebutt.grid(row = 3, column = 1,
                                                       sticky = "NESW",
                                                       padx = 10, pady = 10)
@@ -1628,7 +1794,8 @@ class Program:
         self.add_ingredient_amount_frame_statusbox = Label(self.add_ingredient_amount_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.add_ingredient_amount_frame_statusbox.grid(row = 4, column = 0, 
                                                       sticky = "NESW", 
                                                       columnspan = 2)        
@@ -1656,9 +1823,11 @@ class Program:
             
         # Create and pack heading
         self.add_ingredient_generic_text_frame_heading = Label(self.add_ingredient_generic_text_frame,
-                                                               text = "Enter generic text here: ",
+                                                               text = "You are now adding an ingredient: \n\n Enter generic text in entry box below (e.g '1 large egg'), then press 'save', then 'next'.",
                                                                bg = self.heading_bg,
-                                                               fg = self.heading_txt)
+                                                               fg = self.heading_txt,
+                                                               font = "verdana 15 bold",
+                                                               wraplength = 800)
         self.add_ingredient_generic_text_frame_heading.grid(row = 0, column = 0,
                                                             sticky = "NESW",
                                                             columnspan = 2,
@@ -1668,7 +1837,8 @@ class Program:
         # Creates and packs textbox, where user can input whatever they need for the ingredient
         self.add_ingredient_generic_text_frame_textbox = Entry(self.add_ingredient_generic_text_frame,
                                                                bg = self.subheading_bg,
-                                                               fg = self.subheading_txt)
+                                                               fg = self.subheading_txt,
+                                                               font = "verdana 15")
         self.add_ingredient_generic_text_frame_textbox.grid(row = 1, column = 0,
                                                             sticky = "NESW",
                                                             columnspan = 2,
@@ -1680,7 +1850,8 @@ class Program:
                                                                  text = "Next",
                                                                  command=lambda: self.allow_user_to_proceed("ShowCurrentIngredientsFrame"),
                                                                  bg = self.button_bg,
-                                                                 fg = self.button_txt)
+                                                                 fg = self.button_txt,
+                                                                 font = "verdana 15")
         self.add_ingredient_generic_text_frame_nextbutt.grid(row = 2, column = 0,
                                                              sticky = "NESW",
                                                              padx = 10, 
@@ -1691,7 +1862,8 @@ class Program:
                                                                  text = "Save",
                                                                  command=lambda: self.save_temp_ingredient_info("generic_text",  self.add_ingredient_generic_text_frame_textbox.get()),
                                                                  bg = self.button_bg,
-                                                                 fg = self.button_txt)
+                                                                 fg = self.button_txt,
+                                                                 font = "verdana 15 bold")
         self.add_ingredient_generic_text_frame_savebutt.grid(row = 2, column = 1,
                                                              sticky = "NESW",
                                                              padx = 10, 
@@ -1701,7 +1873,8 @@ class Program:
         self.add_ingredient_generic_text_frame_statusbox = Label(self.add_ingredient_generic_text_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.add_ingredient_generic_text_frame_statusbox.grid(row = 3, column = 0, 
                                                       sticky = "NESW", 
                                                       columnspan = 2)        
@@ -1731,9 +1904,11 @@ class Program:
         
         # Create and pack heading widget
         self.show_current_instructions_frame_heading = Label(self.show_current_instructions_frame,
-                                                             text = "Current instructions:",
+                                                             text = "Below are the instruction(s) you have added so far to this recipe. \n\n To add a new instruction, press the 'add' button. \n\n Once you are finished, press 'save' then 'next'.",
                                                              bg = self.heading_bg,
-                                                             fg = self.heading_txt)
+                                                             fg = self.heading_txt,
+                                                             font = "verdana 15 bold",
+                                                             wraplength = 800)
         self.show_current_instructions_frame_heading.grid(row = 0, column = 0,
                                                           sticky = "NESW",
                                                           columnspan = 3,
@@ -1744,7 +1919,8 @@ class Program:
                                                           textvariable = self.display_instructions,
                                                           wraplength = 500,
                                                           bg = self.subheading_bg,
-                                                          fg = self.subheading_txt)
+                                                          fg = self.subheading_txt,
+                                                          font = "verdana 8")
         self.show_current_instructions_frame_list.grid(row = 1, column = 0,
                                                        sticky = "NESW",
                                                        columnspan = 3,
@@ -1755,7 +1931,8 @@ class Program:
                                                               text = "Add",
                                                               command=lambda: self.show_frame("AddNewInstructionFrame"),
                                                               bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              fg = self.button_txt,
+                                                              font = "verdana 15")
         self.show_current_instructions_frame_addbutt.grid(row = 2, column = 0,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -1765,7 +1942,8 @@ class Program:
                                                                text = "Next",
                                                                command=lambda: self.allow_user_to_proceed("AskRecipeTimerFrame"),
                                                                bg = self.button_bg,
-                                                               fg = self.button_txt)
+                                                               fg = self.button_txt,
+                                                               font = "verdana 15")
         self.show_current_instructions_frame_nextbutt.grid(row = 2, column = 1, 
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
@@ -1775,7 +1953,8 @@ class Program:
                                                                text = "Save",
                                                                command=lambda: self.save_information("instructions", self.new_instruction_info),
                                                                bg = self.button_bg,
-                                                               fg = self.button_txt)
+                                                               fg = self.button_txt,
+                                                               font = "verdana 15 bold")
         self.show_current_instructions_frame_savebutt.grid(row = 2, column = 2,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
@@ -1784,7 +1963,8 @@ class Program:
         self.show_current_instructions_frame_statusbox = Label(self.show_current_instructions_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.show_current_instructions_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 3)        
         
@@ -1810,9 +1990,11 @@ class Program:
         
         # Create and pack heading
         self.add_new_instruction_frame_heading = Label(self.add_new_instruction_frame,
-                                                       text = "Enter instruction:",
+                                                       text = "Enter one instruction into the entry box below (e.g 'Pour 500g of flour into...'), then press 'save', then 'next'.",
                                                        bg = self.heading_bg,
-                                                       fg = self.heading_txt)
+                                                       fg = self.heading_txt,
+                                                       font = "verdana 15 bold",
+                                                       wraplength = 800)
         self.add_new_instruction_frame_heading.grid(row = 0, column = 0,
                                                     sticky = "NESW",
                                                     columnspan = 2,
@@ -1821,7 +2003,8 @@ class Program:
         # Create and pack text box for inputting instruction
         self.add_new_instruction_frame_textbox = Entry(self.add_new_instruction_frame,
                                                        bg = self.subheading_bg,
-                                                       fg = self.subheading_txt)
+                                                       fg = self.subheading_txt,
+                                                       font = "verdana 15")
         self.add_new_instruction_frame_textbox.grid(row = 1, column = 0,
                                                     sticky = "NESW",
                                                     columnspan = 2,
@@ -1832,7 +2015,8 @@ class Program:
                                                          text = "Next",
                                                          command=lambda: self.go_to_home_instruction_frame(),
                                                          bg = self.button_bg,
-                                                         fg = self.button_txt)
+                                                         fg = self.button_txt,
+                                                         font = "verdana 15")
         self.add_new_instruction_frame_nextbutt.grid(row = 2, column = 0,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -1842,7 +2026,8 @@ class Program:
                                                          text = "Save",
                                                          command=lambda: self.save_instruction_info(self.add_new_instruction_frame_textbox.get()),
                                                          bg = self.button_bg,
-                                                         fg = self.button_txt)
+                                                         fg = self.button_txt,
+                                                         font = "verdana 15 bold")
         self.add_new_instruction_frame_savebutt.grid(row = 2, column = 1,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -1851,7 +2036,8 @@ class Program:
         self.add_new_instruction_frame_statusbox = Label(self.add_new_instruction_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.add_new_instruction_frame_statusbox.grid(row = 3, column = 0, 
                                                       sticky = "NESW", 
                                                       columnspan = 2)        
@@ -1878,9 +2064,11 @@ class Program:
         
         # Create and pack heading when user is inputting integer for timer
         self.ask_recipe_timer_frame_heading = Label(self.ask_recipe_timer_frame,
-                                                    text = "Enter the number (mins) you want to set the timer to",
+                                                    text = "Enter the number of minutes you want to set the timer to (e.g '20'), then press 'save', then 'next'.",
                                                     bg = self.heading_bg,
-                                                    fg = self.heading_txt)
+                                                    fg = self.heading_txt,
+                                                    font = "verdana 15 bold",
+                                                    wraplength = 800)
         self.ask_recipe_timer_frame_heading.grid(row = 0, column = 0,
                                                  sticky = "NESW",
                                                  columnspan = 2, padx = 10,
@@ -1889,7 +2077,8 @@ class Program:
         # Create and pack textbox for user input
         self.ask_recipe_timer_frame_textbox = Entry(self.ask_recipe_timer_frame,
                                                     bg = self.subheading_bg,
-                                                    fg = self.subheading_txt)
+                                                    fg = self.subheading_txt,
+                                                    font = "verdana 15")
         self.ask_recipe_timer_frame_textbox.grid(row = 1, column = 0,
                                                  sticky = "NESW",
                                                  columnspan = 2,
@@ -1900,7 +2089,8 @@ class Program:
                                                      text = "Next",
                                                      command=lambda: self.allow_user_to_proceed("UploadImageFrame"),
                                                      bg = self.button_bg,
-                                                     fg = self.button_txt)
+                                                     fg = self.button_txt,
+                                                     font = "verdana 15")
         self.ask_recipe_timer_frame_nextbutt.grid(row = 2, column = 0,
                                                   sticky = "NESW",
                                                   padx = 10, pady = 10)
@@ -1910,7 +2100,8 @@ class Program:
                                                       text = "Save",
                                                       command=lambda: self.save_information("timer_set_to", self.ask_recipe_timer_frame_textbox.get()),
                                                       bg = self.button_bg,
-                                                      fg = self.button_txt) 
+                                                      fg = self.button_txt,
+                                                      font = "verdana 15 bold") 
         self.ask_recipe_timer_frame_savebutt.grid(row = 2, column = 1,
                                                   sticky = "NESW",
                                                   padx = 10, pady = 10)
@@ -1919,7 +2110,8 @@ class Program:
         self.ask_recipe_timer_frame_statusbox = Label(self.ask_recipe_timer_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.ask_recipe_timer_frame_statusbox.grid(row = 3, column = 0, sticky = "NESW",
                                           columnspan = 2)
         
@@ -1944,9 +2136,11 @@ class Program:
             
         # Create and pack heading
         self.upload_image_frame_heading = Label(self.upload_image_frame, 
-                                                text = "Press the upload button to add an image to your recipe.",
+                                                text = "Press the upload button to add an image to your recipe. Images must be in .png format, with a size greater than 640x480. Then press 'next'.",
                                                 bg = self.heading_bg,
-                                                fg = self.heading_txt)
+                                                fg = self.heading_txt,
+                                                font = "verdana 15 bold",
+                                                wraplength = 800)
         self.upload_image_frame_heading.grid(row = 0, column = 0, 
                                              sticky = "NESW",
                                              columnspan = 2,
@@ -1957,7 +2151,8 @@ class Program:
                                                   text = "Next",
                                                   command=lambda: self.allow_user_to_proceed("SaveRecipeToJsonFrame"),
                                                   bg = self.button_bg,
-                                                  fg = self.button_txt)
+                                                  fg = self.button_txt,
+                                                  font = "verdana 15")
         self.upload_image_frame_nextbutt.grid(row = 1, column = 0,
                                               sticky = "NESW",
                                               padx = 10, pady = 10)
@@ -1967,7 +2162,8 @@ class Program:
                                                 text = "Upload",
                                                 command = self.upload_file,
                                                 bg = self.button_bg,
-                                                fg = self.button_txt)
+                                                fg = self.button_txt,
+                                                font = "verdana 15 bold")
         self.upload_image_frame_upbutt.grid(row = 1, column = 1,
                                             sticky = "NESW",
                                             padx = 10, pady = 10)
@@ -1976,7 +2172,8 @@ class Program:
         self.upload_image_frame_statusbox = Label(self.upload_image_frame,
                                              textvariable = self.display_user_input_status,
                                              bg = self.subheading_bg,
-                                             fg = self.subheading_txt)
+                                             fg = self.subheading_txt,
+                                             font = "verdana 15")
         self.upload_image_frame_statusbox.grid(row = 2, column = 0, sticky = "NESW",
                                           columnspan = 2)        
 
@@ -2002,9 +2199,11 @@ class Program:
         
         # Create and pack heading
         self.save_recipe_to_json_frame_heading = Label(self.save_recipe_to_json_frame,
-                                                      text = "Press the save button to add you recipe.",
+                                                      text = "Press the save button below to add you recipe. You will return to the homepage automatically.",
                                                       bg = self.heading_bg,
-                                                      fg = self.heading_txt)
+                                                      fg = self.heading_txt,
+                                                      font = "verdana 15 bold",
+                                                      wraplength = 800)
         self.save_recipe_to_json_frame_heading.grid(row = 0, column = 0,
                                                     sticky = "NESW",
                                                     columnspan = 2,
@@ -2015,7 +2214,8 @@ class Program:
                                                          text = "Save recipe",
                                                          command = self.dump_new_recipe_to_json,
                                                          bg = self.button_bg,
-                                                         fg = self.button_txt)
+                                                         fg = self.button_txt,
+                                                         font = "verdana 15")
         self.save_recipe_to_json_frame_savebutt.grid(row = 1, column = 0,
                                                      sticky = "NESW",
                                                      padx = 10, pady = 10)
@@ -2041,9 +2241,10 @@ class Program:
         
         # Create and pack heading
         self.home_edit_recipes_frame_heading = Label(self.home_edit_recipes_frame,
-                                                     text = "Edit recipes",
+                                                     text = "Editing: Select a recipe below via the combo box, then press the edit button.",
                                                      bg = self.heading_bg,
-                                                     fg = self.heading_txt)
+                                                     fg = self.heading_txt,
+                                                     font = "verdana 15 bold")
         self.home_edit_recipes_frame_heading.grid(row = 0, column = 0,
                                                   sticky = "NESW",
                                                   padx = 10, pady = 10)
@@ -2057,7 +2258,8 @@ class Program:
         # Create and pack combobox
         self.home_edit_recipes_frame_combobox = ttk.Combobox(self.home_edit_recipes_frame,
                                                              state = "readonly",
-                                                             values = self.list_recipes_combobox_name)
+                                                             values = self.list_recipes_combobox_name,
+                                                             font = "verdana 15")
         self.home_edit_recipes_frame_combobox.grid(row = 1, column = 0,
                                                    sticky = "NESW",
                                                    padx = 10, pady = 10)
@@ -2067,7 +2269,8 @@ class Program:
                                                        text = "Edit!",
                                                        command = self.find_selected_recipe,
                                                        bg = self.button_bg,
-                                                       fg = self.button_txt)
+                                                       fg = self.button_txt,
+                                                       font = "verdana 15")
         self.home_edit_recipes_frame_editbutt.grid(row = 2, column = 0,
                                                    sticky = "NESW",
                                                    padx = 10, pady = 10)
@@ -2077,7 +2280,8 @@ class Program:
                                                                text = "Back",
                                                                bg = self.button_bg,
                                                                fg = self.button_txt,
-                                                               command=lambda: self.show_frame("HomePageFrame"))
+                                                               command=lambda: self.show_frame("HomePageFrame"),
+                                                               font = "verdana 15 bold")
         self.home_edit_recipes_frame_backbutt.grid(row = 3, column = 0,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)        
@@ -2109,7 +2313,8 @@ class Program:
         self.home_edit_specific_recipe_frame_heading = Label(self.home_edit_specific_recipe_frame,
                                                              text = "Editings details for recipe named:",
                                                              bg = self.heading_bg,
-                                                             fg = self.heading_txt)
+                                                             fg = self.heading_txt,
+                                                             font = "verdana 15 bold")
         self.home_edit_specific_recipe_frame_heading.grid(row = 0, column = 0,
                                                          sticky = "NESW",
                                                          padx = 10)
@@ -2118,7 +2323,8 @@ class Program:
         self.home_edit_specific_recipe_frame_displayname = Label(self.home_edit_specific_recipe_frame,
                                                                  textvariable = self.display_recipe_name_edit_homepage,
                                                                  bg = self.subheading_bg,
-                                                                 fg = self.subheading_txt)
+                                                                 fg = self.subheading_txt,
+                                                                 font = "verdana 15")
         self.home_edit_specific_recipe_frame_displayname.grid(row = 1, column = 0,
                                                               sticky = "NESW",
                                                               padx = 10)
@@ -2128,7 +2334,8 @@ class Program:
                                                               text = "Delete recipe",
                                                               command = self.delete_recipe,
                                                               bg = self.button_bg,
-                                                              fg = self.button_txt)
+                                                              fg = self.button_txt,
+                                                              font = "verdana 15")
         self.home_edit_specific_recipe_frame_delbutt.grid(row = 2, column = 0,
                                                           sticky = "NESW",
                                                           padx = 10, pady = 10)
@@ -2138,7 +2345,8 @@ class Program:
                                                                text = "Back",
                                                                command=lambda: self.show_frame("HomeEditRecipesFrame"),
                                                                bg = self.button_bg,
-                                                               fg = self.button_txt)
+                                                               fg = self.button_txt,
+                                                               font = "verdana 15 bold")
         self.home_edit_specific_recipe_frame_backbutt.grid(row = 3, column = 0,
                                                            sticky = "NESW",
                                                            padx = 10, pady = 10)
