@@ -360,7 +360,6 @@ class Program:
                         self.display_ingredients.set(str(self.new_ingredient_info))
                         self.display_user_input_status.set("Information successfully saved")
                         self.able_to_proceed.set(1) # Ensure that the user can continue
-                        self.temp_ingredient_info = []
                     
                     else: # If user has already saved their ingredient amount
                         self.temp_ingredient_info.pop(-1) # Removes old quantity value
@@ -375,7 +374,7 @@ class Program:
             except ValueError: # If a letter is found in the ingredient amount
                 if "/" in info: # Special case for entering fractions like 3/4 if user has say wanted to use a tsp quantity type
                     info = str(info) # Turn it into a string
-                    info = info.strip("abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+=-{}[]:;'<>,.? ") # Remove any stray letters and symbols that might be in the user input
+                    info = info.strip("abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+={}[]-:;'<>,.? ") # Remove any stray letters and symbols that might be in the user input
 
                     if len(self.temp_ingredient_info) == 2: # If this is the first that the user saves their ingredient amount
                         self.temp_ingredient_info.append(info) # Add the quantity amount to the list
@@ -383,8 +382,7 @@ class Program:
                         self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
                         self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
                         self.display_user_input_status.set("Information successfully saved")
-                        self.able_to_proceed.set(1) # Ensure that the user can continue
-                        self.temp_ingredient_info = []
+                        self.able_to_proceed.set(1) # Ensure that the user can continu
                         
                     else: # If user has already saved their ingredient amount
                         self.temp_ingredient_info.pop(-1) # Removes old quantity value
@@ -395,7 +393,6 @@ class Program:
                         self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
                         self.display_user_input_status.set("Information successfully saved")
                         self.able_to_proceed.set(1) # Ensure that the user can continue
-                        self.temp_ingredient_info = []
                 
                 else:
                     self.display_user_input_status.set("ERROR: Enter whole numbers or fractional amounts (e.g. 3/4)")
@@ -403,25 +400,31 @@ class Program:
         
         # If user presses save button while on the adding generic text screen            
         elif data_type == "generic_text":
-            if len(self.temp_ingredient_info) == 1: # If user has not pressed the save button before
-                self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
-                final_ingredient = self.temp_ingredient_info[1] # The second item in the temp ingredient dictionary has the string we want to add
-                self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
-                self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
-                self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
-                self.able_to_proceed.set(1) # Allows user to proceed
-                self.temp_ingredient_info = []
-                
-            else:
-                self.temp_ingredient_info.pop(-1) # Removes old generic text
-                self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
-                final_ingredient = self.temp_ingredient_info[1] # The second item in the temp ingredient dictionary has the string we want to add
-                self.new_ingredient_info.pop(-1) # Removes the old generic text which user has decided to replace
-                self.new_ingredient_info.append(final_ingredient) # Add generic text to the new ingredient dictionary
-                self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
-                self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
-                self.able_to_proceed.set(1) # Allows user to proceed
-                self.temp_ingredient_info = []
+            info = info.strip()
+            if info == "": # If input is blank
+                self.able_to_proceed.set(0)
+                self.display_user_input_status.set("ERROR: Enter required information")        
+            
+            else: # If input is valid (not blank)
+                if len(self.temp_ingredient_info) == 1: # If user has not pressed the save button before
+                    self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
+                    final_ingredient = self.temp_ingredient_info[1] # The second item in the temp ingredient dictionary has the string we want to add
+                    self.new_ingredient_info.append(final_ingredient) # Add the fully built ingredient line to the temp ingredient dictionary
+                    self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
+                    self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
+                    self.able_to_proceed.set(1) # Allows user to proceed
+                    self.temp_ingredient_info = []
+                    
+                else:
+                    self.temp_ingredient_info.pop(-1) # Removes old generic text
+                    self.temp_ingredient_info.append(info) # Add the quantity amount to the temp list
+                    final_ingredient = self.temp_ingredient_info[1] # The second item in the temp ingredient dictionary has the string we want to add
+                    self.new_ingredient_info.pop(-1) # Removes the old generic text which user has decided to replace
+                    self.new_ingredient_info.append(final_ingredient) # Add generic text to the new ingredient dictionary
+                    self.display_ingredients.set(str(self.new_ingredient_info)) # Add it to the variable that displays the list of added ingredients so far to the user
+                    self.display_user_input_status.set("Information successfully saved") # Inform user that information has been saved
+                    self.able_to_proceed.set(1) # Allows user to proceed
+                    self.temp_ingredient_info = []
           
                     
     def create_generic_text_or_other_frame(self):
@@ -569,6 +572,9 @@ class Program:
                 self.display_user_input_status.set("ERROR: Enter required information then press the save button.") # Change status box to inform user
         
         else:
+            if frame_name == "ShowCurrentIngredientsFrame":
+                self.temp_ingredient_info = [] # Reset for validation purposes
+                
             self.able_to_proceed.set(0) # Reset the counter for the next frame
             self.display_user_input_status.set("----") # Reset the status box
             self.clear_entry_widgets() # Clear entries from all inputs
