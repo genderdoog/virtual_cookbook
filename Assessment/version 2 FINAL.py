@@ -100,10 +100,6 @@ class Program:
         self.edited_recipe_info = {} 
         self.display_recipe_name_edit_homepage = StringVar()        
         
-        # COMPONENT 4 WINDOWS
-        self.windows["HomePageFrame"] = self.create_HomePageFrame() # Main menu of program
-        self.windows["SettingsFrame"] = self.create_SettingsFrame() # Settings frame
-        
         # COMPONENT 1 WINDOWS
         self.windows["HomeChoosingToViewRecipeFrame"] = self.create_HomeChoosingToViewRecipeFrame()
         self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("do_not_delete") # To make program run, we first to parse in blank data
@@ -135,6 +131,10 @@ class Program:
         self.windows["HomeEditRecipesFrame"] = self.create_HomeEditRecipesFrame()
         # Homepage for a specific recipe
         self.windows["HomeEditSpecificRecipeFrame"] = self.create_HomeEditSpecificRecipeFrame()        
+        
+        # COMPONENT 4 WINDOWS
+        self.windows["HomePageFrame"] = self.create_HomePageFrame() # Main menu of program
+        self.windows["SettingsFrame"] = self.create_SettingsFrame() # Settings frame
         
         # Show this frame when program first starts
         self.show_frame("HomePageFrame")
@@ -177,42 +177,53 @@ class Program:
         self.button_bg = chosen_theme_details["button_bg"]
         self.button_txt = chosen_theme_details["button_txt"]
         
-        # Change the settings of each frame
-        
-        # Homepage frame
-        self.home_page_frame.configure(bg = self.bg) 
-        self.home_page_frame_heading.configure(bg = self.heading_bg,
-                                               fg = self.heading_txt)
-        self.home_page_frame_viewbutt.configure(bg = self.button_bg,
-                                                fg = self.button_txt)
-        self.home_page_frame_addbutt.configure(bg = self.button_bg,
-                                               fg = self.button_txt)
-        self.home_page_frame_editbutt.configure(bg = self.button_bg,
-                                                fg = self.button_txt)
-        self.home_page_frame_settingsbutt.configure(bg = self.button_bg,
-                                                    fg = self.button_txt)
-        self.home_page_frame_quitbutt.configure(bg = self.button_bg,
-                                                fg = self.button_txt)
-        
-        # Settings frame
-        self.settings_frame.configure(bg = self.bg)
-        self.settings_frame_heading.configure(bg = self.heading_bg, 
-                                              fg = self.heading_txt)
-        self.settings_frame_subhead1.configure(bg = self.subheading_bg,
-                                               fg = self.subheading_txt)
-        self.settings_frame_savebutt.configure(bg = self.button_bg,
-                                               fg = self.button_txt)
-        self.settings_frame_backbutt.configure(bg = self.button_bg,
-                                               fg = self.button_txt)
-        
-        
         # To make it persistent across application restarts, we change the first variable of the json file
         theme_config_json["chosen_theme"] = theme_name
         
         # Then write the theme file back
         with open("./data/theme_config.json", "w") as f:
             json.dump(theme_config_json, f, indent = 4)
-    
+            
+        # We now recreate each window, so that the theme takes effect for each window
+        # COMPONENT 1 WINDOWS
+        self.windows["HomeChoosingToViewRecipeFrame"] = self.create_HomeChoosingToViewRecipeFrame()
+        self.windows["ShowRecipeFrame"] = self.create_ShowRecipeFrame("do_not_delete") # To make program run, we first to parse in blank data
+        
+        # COMPONENT 2 WINDOWS
+        # Getting basic information
+        self.windows["AskRecipeNameFrame"] = self.create_AskRecipeNameFrame()
+        self.windows["AskRecipeAuthorSourceFrame"] = self.create_AskRecipeAuthorSourceFrame()
+        self.windows["AskRecipePrepTimeFrame"] = self.create_AskRecipePrepTimeFrame()
+        self.windows["AskRecipeTotalTimeFrame"] = self.create_AskRecipeTotalTimeFrame()
+        self.windows["AskRecipeHowManyServesFrame"] = self.create_AskRecipeHowManyServesFrame()
+        self.windows["AskRecipeTimerFrame"] = self.create_AskRecipeTimerFrame()
+        # Adding ingredients
+        self.windows["ShowCurrentIngredientsFrame"] = self.create_ShowCurrentIngredientsFrame()
+        self.windows["AddIngredientQuantityTypeFrame"] = self.create_AddIngredientQuantityTypeFrame()
+        self.windows["AddIngredientNameFrame"] = self.create_AddIngredientNameFrame()
+        self.windows["AddIngredientAmountFrame"] = self.create_AddIngredientAmountFrame()
+        self.windows["AddIngredientGenericTextFrame"] = self.create_AddIngredientGenericTextFrame()
+        # Adding instructions
+        self.windows["ShowCurrentInstructionsFrame"] = self.create_ShowCurrentInstructionsFrame()
+        self.windows["AddNewInstructionFrame"] = self.create_AddNewInstructionFrame()
+        # Image uploading when adding recipe
+        self.windows["UploadImageFrame"] = self.create_UploadImageFrame()
+        # Final save button for recipe
+        self.windows["SaveRecipeToJsonFrame"] = self.create_SaveRecipeToJsonFrame()
+        
+        # COMPONENT 3 WINDOWS
+        # Homepage 
+        self.windows["HomeEditRecipesFrame"] = self.create_HomeEditRecipesFrame()
+        # Homepage for a specific recipe
+        self.windows["HomeEditSpecificRecipeFrame"] = self.create_HomeEditSpecificRecipeFrame()        
+        
+        # COMPONENT 4 WINDOWS
+        self.windows["HomePageFrame"] = self.create_HomePageFrame() # Main menu of program
+        self.windows["SettingsFrame"] = self.create_SettingsFrame() # Settings frame
+        
+        # Refresh the main window
+        self.root.mainloop()
+        
     
     def run_timer(self):
         '''Runs the timer of a recipe'''
