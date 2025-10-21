@@ -220,10 +220,6 @@ class Program:
         # COMPONENT 4 WINDOWS
         self.windows["HomePageFrame"] = self.create_HomePageFrame() # Main menu of program
         self.windows["SettingsFrame"] = self.create_SettingsFrame() # Settings frame
-        
-        # Refresh the main window
-        self.root.mainloop()
-        
     
     def run_timer(self):
         '''Runs the timer of a recipe'''
